@@ -12,7 +12,7 @@ function App() {
       <h1>wellcome to talent Iq</h1>
 
       <SignedOut>
-        <SignInButton mode='modal' />
+        <SignInButton mode='modal' >Login</SignInButton>
       </SignedOut>
 
       <SignedIn>
