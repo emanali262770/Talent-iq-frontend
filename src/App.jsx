@@ -1,27 +1,12 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { SignedOut, SignedIn, SignInButton, SignOutButton, UserButton } from '@clerk/clerk-react'
+import Router from "./app.routes";
+import { AuthProvider } from "./Features/auth/auth.context";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
   return (
-    <>
-      <h1>wellcome to talent Iq</h1>
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
+  );
+};
 
-      <SignedOut>
-        <SignInButton mode='modal' >Login</SignInButton>
-      </SignedOut>
-
-      <SignedIn>
-        <SignOutButton />
-      </SignedIn>
-
-      <UserButton />
-    </>
-  )
-}
-
-export default App
+export default App;
