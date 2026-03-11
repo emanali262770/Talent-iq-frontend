@@ -11,6 +11,56 @@
   position: relative;
   overflow-x: hidden;
 
+  .page-nav {
+    width: 100%;
+    max-width: 1300px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-btn {
+    border: 1px solid rgba(71, 85, 105, 0.8);
+    border-radius: 10px;
+    padding: 9px 14px;
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.75);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      border-color: rgba(225, 29, 72, 0.45);
+    }
+
+    &.primary {
+      background: linear-gradient(135deg, #e11d48, #f97316);
+      border-color: transparent;
+      color: #fff;
+    }
+  }
+
+  .user-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 220px;
+    padding: 9px 12px;
+    border: 1px solid rgba(71, 85, 105, 0.8);
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -427,52 +477,56 @@
     border: 1px solid rgba(51, 65, 85, 0.3);
 
     .checkbox-container {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      align-items: start;
+      column-gap: 12px;
       cursor: pointer;
       position: relative;
-      padding-left: 35px;
       user-select: none;
 
       input {
         position: absolute;
         opacity: 0;
-        cursor: pointer;
-        height: 0;
-        width: 0;
+        pointer-events: none;
 
         &:checked ~ .checkmark {
-          background: linear-gradient(135deg, #818cf8, #e11d48);
+          // background: linear-gradient(135deg, #e11d48, #f97316);
           border-color: transparent;
 
           &:after {
             display: block;
           }
         }
+
+        &:focus-visible ~ .checkmark {
+          border-color: #e11d48;
+        }
       }
 
       .checkmark {
-        position: absolute;
-        left: 0;
+        position: relative;
         height: 22px;
         width: 22px;
+        margin-top: 1px;
         background: rgba(10, 15, 30, 0.8);
         border: 2px solid #334155;
-        border-radius: 8px;
+        border-radius: 7px;
         transition: all 0.2s ease;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
 
         &:after {
           content: "";
           position: absolute;
           display: none;
-          left: 7px;
-          top: 3px;
-          width: 6px;
-          height: 12px;
+          left: 50%;
+          top: 48%;
+          width: 5px;
+          height: 10px;
           border: solid white;
           border-width: 0 2px 2px 0;
-          transform: rotate(45deg);
+          transform: translate(-50%, -58%) rotate(45deg);
+          filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.35));
         }
       }
 
@@ -480,11 +534,11 @@
         font-size: 13px;
         line-height: 1.6;
         color: #cbd5e1;
+        margin: 0;
       }
 
       &:hover .checkmark {
-        border-color: #818cf8;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        border-color: #e11d48;
       }
     }
   }
@@ -554,6 +608,19 @@
 @media (max-width: 768px) {
   .home {
     padding: 40px 20px;
+
+    .page-nav {
+      justify-content: stretch;
+
+      .nav-btn {
+        flex: 1;
+      }
+
+      .user-chip {
+        flex: 1;
+        max-width: none;
+      }
+    }
 
     .header {
       margin-bottom: 40px;

@@ -1,6 +1,6 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../auth.context";
-import { getCurrentUser, login, logout, register } from "../services/auth.api";
+import { login, logout, register } from "../services/auth.api";
 
 export const useAuth = () => {
   const { user, setUser, loading, setLoading } = useContext(AuthContext);
@@ -43,24 +43,7 @@ export const useAuth = () => {
       setLoading(false);
     }
   }
-  async function handleGetCurrentUser() {
-    setLoading(true);
 
-    try {
-      const data = await getCurrentUser();
-      setUser(data.user);
-    } catch (error) {
-      console.error("Get Current User Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
-    useEffect(() => {
- 
-    handleGetCurrentUser();
- 
-}, []);
-  
   return {
     user,
     loading,
