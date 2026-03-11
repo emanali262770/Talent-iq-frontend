@@ -1,6 +1,6 @@
 import React from 'react'
 import { Route, Routes } from 'react-router-dom'
-import Login from './Features/auth/pages/login'
+import Login from './Features/auth/pages/Login'
 import Register from './Features/auth/pages/Register'
 import Protected from './Features/auth/components/Protected'
 import Home from './Features/interview-ai/pages/Home'
