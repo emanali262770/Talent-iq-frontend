@@ -297,7 +297,7 @@
    sphere has breathing room and is never cropped at the edges.
 ───────────────────────────────────────────────────────────────── */
 .hero-visual {
-  min-height: clamp(500px, 68vh, 760px);
+  min-height: clamp(520px, 72vh, 780px);
   position: relative;
   overflow: visible; /* ← critical: never clip the canvas */
 }
@@ -306,8 +306,8 @@
   position: absolute;
   /* Extend 60 px beyond all four edges so the sphere
      is fully visible without any border artefacts. */
-  inset: -60px;
-  opacity: 0.9;
+  inset: -40px -80px -40px -20px;
+  opacity: 1;
 
   canvas {
     width: 100% !important;
