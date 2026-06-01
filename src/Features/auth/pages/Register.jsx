@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 
@@ -9,23 +9,35 @@ const Register = () => {
         email: "",
         password: ""
     });
-    const {user, handleRegister,loading } = useAuth();
+    const navigate = useNavigate();
+    const { handleRegister, loading } = useAuth();
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('click');
-        
-       await handleRegister(form);
-        console.log(user);
-        
+        await handleRegister(form);
+        navigate("/dashboard");
     };
-    if(loading){
-        return <div>Loading...</div>
-    }
   return (
-    <div className="login-container">
+    <div className="auth-page">
+      <Link className="auth-brand" to="/">
+        <span>TIQ</span>
+        Talent IQ
+      </Link>
+      <section className="auth-visual">
+        <span className="eyebrow">Get started</span>
+        <h1>Create a focused path for your next interview.</h1>
+        <p>
+          Set up your Talent IQ account and turn job descriptions, resumes, and
+          profile notes into practical interview reports.
+        </p>
+        <div className="auth-metrics">
+          <strong>Job fit insight</strong>
+          <strong>Profile context</strong>
+          <strong>Saved reports</strong>
+        </div>
+      </section>
       <div className="login-card">
         <h2>Create Account</h2>
-        <p className="subtitle">Register to get started</p>
+        <p className="subtitle">Register to start preparing with Talent IQ.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
@@ -58,8 +70,8 @@ const Register = () => {
             />
           </div>
 
-          <button type="submit" className="login-btn">
-            Register
+          <button disabled={loading} type="submit" className="login-btn">
+            {loading ? "Creating account..." : "Register"}
           </button>
 
           <p className="register-link">

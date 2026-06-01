@@ -8,20 +8,37 @@ const Login = () => {
     password: "",
   });
   const navigate = useNavigate();
-  const {user, handleLogin, loading } = useAuth();
+  const { handleLogin, loading } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
     await handleLogin(form);
-    navigate('/')
+    navigate('/dashboard')
     
   };
   
 
   return (
-    <div className="login-container">
+    <div className="auth-page">
+      <Link className="auth-brand" to="/">
+        <span>TIQ</span>
+        Talent IQ
+      </Link>
+      <section className="auth-visual">
+        <span className="eyebrow">Welcome back</span>
+        <h1>Continue building your interview strategy.</h1>
+        <p>
+          Pick up your saved reports, add a new job description, and generate a
+          sharper preparation plan.
+        </p>
+        <div className="auth-metrics">
+          <strong>AI role analysis</strong>
+          <strong>Resume matching</strong>
+          <strong>Interview reports</strong>
+        </div>
+      </section>
       <div className="login-card">
-        <h2>Welcome Back</h2>
-        <p className="subtitle">Login to continue</p>
+        <h2>Login</h2>
+        <p className="subtitle">Enter your details to open your dashboard.</p>
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">

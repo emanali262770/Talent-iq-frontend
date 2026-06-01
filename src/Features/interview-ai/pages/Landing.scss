@@ -1,0 +1,894 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap");
+
+/* ─────────────────────────────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────────────────────────────── */
+.tiq-landing {
+  --bg: #050507;
+  --bg-2: #0a0a0f;
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel-strong: rgba(255, 255, 255, 0.055);
+  --stroke: rgba(255, 255, 255, 0.09);
+  --stroke-bright: rgba(255, 255, 255, 0.22);
+  --text: #f0ece4;
+  --muted: rgba(240, 236, 228, 0.46);
+  --accent: #c8b89a;
+  --gold: #d4a853;
+  --dim: rgba(240, 236, 228, 0.14);
+
+  min-height: 100vh;
+  color: var(--text);
+  background: var(--bg);
+  font-family: "DM Sans", "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  overflow-x: hidden;
+
+  /* Noise grain overlay */
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  /* Large geometric circle — decorative background */
+  &::after {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(140vw, 1600px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid var(--stroke);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────────────────────────── */
+.tiq-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 40px;
+  min-height: 80px;
+  padding: 0 clamp(24px, 5vw, 80px);
+  border-bottom: 1px solid var(--stroke);
+  background: rgba(5, 5, 7, 0.72);
+  backdrop-filter: blur(24px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text);
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+
+  span {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--stroke-bright);
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+}
+
+.center-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+
+  a {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s ease;
+
+    &:hover { color: var(--text); }
+  }
+}
+
+.action-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  a {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s;
+
+    &:hover { color: var(--text); }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────────────────────────── */
+.primary-link,
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1px solid var(--stroke-bright);
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text) !important;
+  background: transparent;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--text);
+    color: var(--bg) !important;
+    border-color: var(--text);
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 1px solid var(--stroke);
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: all 0.3s ease;
+
+  &:hover {
+    color: var(--text);
+    border-color: var(--stroke-bright);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   KICKER
+───────────────────────────────────────────────────────────────── */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+
+  &::before {
+    content: "";
+    width: 32px;
+    height: 1px;
+    background: var(--stroke-bright);
+    flex-shrink: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   HERO
+   FIX: overflow: visible so the 3-D sphere is never clipped.
+───────────────────────────────────────────────────────────────── */
+.hero {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(40px, 6vw, 100px);
+  padding: 120px 0 80px;
+  overflow: visible; /* ← was implicitly hidden; fix border clipping */
+}
+
+.hero-copy {
+  h1 {
+    margin: 0;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(72px, 8vw, 130px);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  p {
+    margin: 28px 0 0;
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.9;
+    font-weight: 300;
+  }
+}
+
+.hero-ctas {
+  margin-top: 44px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.metrics {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--stroke);
+
+  article {
+    padding: 18px 20px;
+    background: var(--bg);
+  }
+
+  strong,
+  span {
+    display: block;
+  }
+
+  strong {
+    margin-bottom: 6px;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.06em;
+    color: var(--text);
+  }
+
+  span {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   HERO VISUAL
+   FIX: overflow visible + negative inset on .network-visual so the
+   sphere has breathing room and is never cropped at the edges.
+───────────────────────────────────────────────────────────────── */
+.hero-visual {
+  min-height: clamp(500px, 68vh, 760px);
+  position: relative;
+  overflow: visible; /* ← critical: never clip the canvas */
+}
+
+.network-visual {
+  position: absolute;
+  /* Extend 60 px beyond all four edges so the sphere
+     is fully visible without any border artefacts. */
+  inset: -60px;
+  opacity: 0.9;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   REPORT CARD  (kept intact)
+───────────────────────────────────────────────────────────────── */
+.report-card {
+  position: absolute;
+  inset: auto 4% 6% 4%;
+  border: 1px solid var(--stroke-bright);
+  border-radius: 2px;
+  overflow: hidden;
+  background: rgba(5, 5, 7, 0.88);
+  box-shadow: 0 48px 100px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--stroke);
+  backdrop-filter: blur(24px);
+}
+
+.report-head {
+  min-height: 44px;
+  border-bottom: 1px solid var(--stroke);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+
+  i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+  }
+
+  i:nth-child(1) { background: #555; }
+  i:nth-child(2) { background: #444; }
+  i:nth-child(3) { margin-right: 12px; background: #3a3a3a; }
+
+  strong {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+}
+
+.report-body {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+}
+
+.fit-card,
+.report-lines article,
+.feature-grid article,
+.step-stack article,
+.demo-pane,
+.quotes article,
+.faq-list details,
+.final-cta {
+  border: 1px solid var(--stroke);
+  border-radius: 2px;
+  background: var(--panel);
+}
+
+.fit-card {
+  padding: 18px;
+
+  small {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  strong {
+    display: block;
+    margin: 12px 0;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 62px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+}
+
+.report-lines {
+  display: grid;
+  gap: 10px;
+
+  article {
+    padding: 12px 16px;
+  }
+
+  span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 9px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+
+  p {
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TAG STRIP
+───────────────────────────────────────────────────────────────── */
+.tag-strip,
+.features,
+.workflow,
+.demo,
+.quotes,
+.faq,
+.final-cta {
+  width: min(1400px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.tag-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--stroke);
+
+  span {
+    min-height: 64px;
+    display: grid;
+    place-items: center;
+    background: var(--bg-2);
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    transition: background 0.3s, color 0.3s;
+
+    &:hover {
+      background: var(--panel-strong);
+      color: var(--text);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   FEATURES
+───────────────────────────────────────────────────────────────── */
+.features,
+.demo,
+.faq {
+  padding: 120px 0;
+}
+
+.section-title {
+  max-width: 900px;
+  margin-bottom: 40px;
+
+  h2 {
+    margin: 0;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(52px, 6vw, 100px);
+    line-height: 0.92;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+
+  p {
+    margin-top: 20px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.88;
+    max-width: 680px;
+    font-weight: 300;
+  }
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  background: var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+
+  article {
+    min-height: 280px;
+    padding: 36px 32px;
+    background: var(--bg);
+    border-radius: 0;
+    border: none;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: var(--panel-strong);
+    }
+  }
+
+  span {
+    display: block;
+    margin-bottom: 48px;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h3 {
+    margin: 0;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 24px;
+    line-height: 1.18;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text);
+  }
+
+  p {
+    margin-top: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 13px;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   WORKFLOW
+───────────────────────────────────────────────────────────────── */
+.workflow {
+  display: grid;
+  grid-template-columns: 0.72fr 1.28fr;
+  gap: 60px;
+  padding: 120px 0;
+}
+
+.section-title.sticky {
+  position: sticky;
+  top: 112px;
+  align-self: start;
+}
+
+.step-stack {
+  display: grid;
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  background: var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+
+  article {
+    min-height: 220px;
+    padding: 36px 32px;
+    background: var(--bg);
+    border: none;
+    border-radius: 0;
+    transition: background 0.3s;
+
+    &:hover { background: var(--panel-strong); }
+  }
+
+  span {
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h3 {
+    margin: 32px 0 12px;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 44px;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    font-weight: 400;
+  }
+
+  p {
+    color: var(--muted);
+    line-height: 1.82;
+    font-size: 14px;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DEMO
+───────────────────────────────────────────────────────────────── */
+.demo {
+  display: grid;
+  grid-template-columns: 0.84fr 1.16fr;
+  gap: 1px;
+  background: var(--stroke);
+  border: 1px solid var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.demo-copy {
+  padding: 48px 40px;
+  background: var(--bg);
+
+  h2 {
+    margin: 0;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(44px, 5vw, 76px);
+    line-height: 0.92;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+
+  p {
+    margin-top: 20px;
+    color: var(--muted);
+    line-height: 1.82;
+    font-size: 14px;
+    font-weight: 300;
+  }
+}
+
+.demo-pane {
+  display: grid;
+  overflow: hidden;
+  background: var(--bg-2);
+  border-radius: 0;
+
+  .row {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--stroke);
+    background: transparent;
+    transition: background 0.25s ease;
+
+    &:last-child { border-bottom: 0; }
+
+    &.active,
+    &:hover {
+      background: var(--panel-strong);
+    }
+  }
+
+  strong {
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  p {
+    margin-top: 8px;
+    color: var(--muted);
+    line-height: 1.72;
+    font-size: 13px;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   QUOTES
+───────────────────────────────────────────────────────────────── */
+.quotes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  background: var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+  padding: 0;
+
+  article {
+    min-height: 260px;
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background: var(--bg);
+    border: none;
+    border-radius: 0;
+  }
+
+  p {
+    color: var(--text);
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 20px;
+    line-height: 1.72;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  strong {
+    margin-top: 24px;
+    font-family: "DM Sans", sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   FAQ
+───────────────────────────────────────────────────────────────── */
+.faq {
+  display: grid;
+  grid-template-columns: 0.72fr 1.28fr;
+  gap: 60px;
+}
+
+.faq-list {
+  display: grid;
+  gap: 1px;
+  border: 1px solid var(--stroke);
+  background: var(--stroke);
+  border-radius: 2px;
+  overflow: hidden;
+
+  details {
+    padding: 24px 28px;
+    background: var(--bg);
+    border: none;
+    border-radius: 0;
+    transition: background 0.2s;
+
+    &[open] {
+      background: var(--panel-strong);
+    }
+  }
+
+  summary {
+    cursor: pointer;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 18px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--text);
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+
+  p {
+    margin-top: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+    font-size: 14px;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   FINAL CTA
+───────────────────────────────────────────────────────────────── */
+.final-cta {
+  margin-top: 0;
+  margin-bottom: 80px;
+  padding: clamp(48px, 6vw, 80px) clamp(36px, 5vw, 72px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 40px;
+  background: var(--bg);
+  border-color: var(--stroke);
+
+  h2 {
+    margin: 0;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(52px, 6.5vw, 104px);
+    line-height: 0.88;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+  }
+
+  p {
+    margin-top: 18px;
+    max-width: 600px;
+    color: var(--muted);
+    line-height: 1.82;
+    font-size: 15px;
+    font-weight: 300;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION SPACING
+───────────────────────────────────────────────────────────────── */
+.tiq-landing > section + section {
+  margin-top: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .hero,
+  .workflow,
+  .demo,
+  .faq {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .section-title.sticky {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .tiq-nav {
+    grid-template-columns: 1fr auto;
+    min-height: 64px;
+  }
+
+  .center-links,
+  .action-links a:first-child {
+    display: none;
+  }
+
+  .hero {
+    padding-top: 100px;
+  }
+
+  .hero-copy h1 {
+    font-size: 68px;
+  }
+
+  .metrics,
+  .report-body,
+  .feature-grid,
+  .tag-strip,
+  .quotes,
+  .final-cta {
+    grid-template-columns: 1fr;
+  }
+
+  .report-card {
+    inset: auto 0 6% 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .brand {
+    font-size: 0;
+    gap: 0;
+
+    span {
+      font-size: 11px;
+    }
+  }
+
+  .hero-ctas a {
+    width: 100%;
+  }
+}

@@ -579,3 +579,300 @@
     }
   }
 }
+
+.report-page {
+  --bg: #050507;
+  --bg-2: #0a0a0f;
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel-strong: rgba(255, 255, 255, 0.055);
+  --stroke: rgba(255, 255, 255, 0.09);
+  --stroke-bright: rgba(255, 255, 255, 0.22);
+  --text: #f0ece4;
+  --muted: rgba(240, 236, 228, 0.46);
+  --accent: #c8b89a;
+  --gold: #d4a853;
+
+  padding: 120px clamp(24px, 5vw, 80px) 80px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  overflow-x: hidden;
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    height: auto;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(140vw, 1600px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--stroke);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page-nav {
+    margin-bottom: 56px;
+  }
+
+  .nav-btn,
+  .user-chip {
+    min-height: 40px;
+    border: 1px solid var(--stroke);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .nav-btn:hover {
+    transform: none;
+    color: var(--text);
+    border-color: var(--stroke-bright);
+  }
+
+  .nav-btn.primary {
+    background: transparent;
+    border-color: var(--stroke-bright);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .nav-btn.primary:hover {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .report-header {
+    max-width: 1000px;
+    margin: 0 auto 56px;
+  }
+
+  .report-header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+
+    &::before {
+      content: "";
+      width: 32px;
+      height: 1px;
+      background: var(--stroke-bright);
+    }
+  }
+
+  .report-header h1 {
+    margin: 18px 0 18px;
+    color: var(--text);
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(68px, 7vw, 118px);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .report-header h1 .gradient-text {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--accent);
+  }
+
+  .report-header p,
+  .score-details p,
+  .match-bar-item span,
+  .card-content pre,
+  .card-content .self-description,
+  .question-details p,
+  .day-tasks li {
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  .score-card,
+  .tab-content,
+  .overview-grid .info-card,
+  .questions-tab .question-card,
+  .gaps-grid .gap-card,
+  .plan-timeline .timeline-day {
+    border: 1px solid var(--stroke);
+    border-radius: 2px;
+    background: var(--panel);
+    box-shadow: none;
+  }
+
+  .score-card {
+    backdrop-filter: blur(24px);
+  }
+
+  .score-number .value {
+    color: var(--text);
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 68px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+  }
+
+  .score-number .label,
+  .question-details .label {
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+  }
+
+  .score-details h3,
+  .overview-grid .info-card .card-header h3,
+  .question-header h3,
+  .gap-header .gap-skill,
+  .day-header .day-focus {
+    color: var(--text);
+    font-family: "DM Serif Display", Georgia, serif;
+    font-weight: 400;
+    font-style: italic;
+  }
+
+  .bar-container,
+  .gap-progress .progress-bar {
+    background: rgba(240, 236, 228, 0.12);
+    border-radius: 2px;
+  }
+
+  .bar-fill,
+  .gap-progress .progress-fill {
+    border-radius: 2px;
+  }
+
+  .report-tabs {
+    gap: 1px;
+    border: 1px solid var(--stroke);
+    border-radius: 2px;
+    background: var(--stroke);
+    overflow: hidden;
+  }
+
+  .report-tabs .tab-btn {
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .report-tabs .tab-btn:hover,
+  .report-tabs .tab-btn.active {
+    background: var(--panel-strong);
+    color: var(--text);
+  }
+
+  .tab-content {
+    padding: 1px;
+    background: var(--stroke);
+  }
+
+  .overview-grid,
+  .questions-tab,
+  .gaps-grid,
+  .plan-timeline {
+    gap: 1px;
+  }
+
+  .overview-grid .info-card,
+  .questions-tab .question-card,
+  .plan-timeline .timeline-day {
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+  }
+
+  .info-card .card-header,
+  .question-card .question-header,
+  .timeline-day .day-header {
+    background: transparent;
+    border-bottom: 1px solid var(--stroke);
+  }
+
+  .icon-wrapper {
+    border: 1px solid var(--stroke-bright);
+    border-radius: 2px;
+    background: transparent;
+  }
+
+  .icon-wrapper svg {
+    color: var(--accent);
+  }
+
+  .question-number,
+  .day-number,
+  .gap-severity {
+    border-radius: 2px;
+    background: var(--panel-strong) !important;
+    color: var(--accent) !important;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .gaps-grid .gap-card {
+    border-color: var(--stroke) !important;
+    border-radius: 0;
+    background: var(--bg);
+  }
+
+  .gaps-grid .gap-card:hover {
+    transform: none;
+    background: var(--panel-strong);
+    box-shadow: none;
+  }
+
+  .resume-preview h4 {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-page {
+    padding: 96px 24px 48px;
+
+    .report-header h1 {
+      font-size: 60px;
+    }
+  }
+}

@@ -184,3 +184,217 @@
     font-size: 28px;
   }
 }
+
+.reports-page {
+  --bg: #050507;
+  --bg-2: #0a0a0f;
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel-strong: rgba(255, 255, 255, 0.055);
+  --stroke: rgba(255, 255, 255, 0.09);
+  --stroke-bright: rgba(255, 255, 255, 0.22);
+  --text: #f0ece4;
+  --muted: rgba(240, 236, 228, 0.46);
+  --accent: #c8b89a;
+
+  padding: 120px clamp(24px, 5vw, 80px) 80px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow-x: hidden;
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.032;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+
+  &::after {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: min(140vw, 1600px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--stroke);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-nav {
+    max-width: 1400px;
+    margin-bottom: 56px;
+  }
+
+  .nav-btn,
+  .user-chip {
+    min-height: 40px;
+    border: 1px solid var(--stroke);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .nav-btn:hover {
+    transform: none;
+    color: var(--text);
+    border-color: var(--stroke-bright);
+  }
+
+  .nav-btn.primary {
+    background: transparent;
+    border-color: var(--stroke-bright);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .nav-btn.primary:hover {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .reports-header {
+    max-width: 1400px;
+    margin: 0 auto 44px;
+  }
+
+  .reports-header .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+
+    &::before {
+      content: "";
+      width: 32px;
+      height: 1px;
+      background: var(--stroke-bright);
+    }
+  }
+
+  .reports-header h1 {
+    margin: 18px 0 14px;
+    color: var(--text);
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(64px, 7vw, 112px);
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .reports-header p,
+  .state-card {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    line-height: 1.9;
+  }
+
+  .reports-grid {
+    max-width: 1400px;
+    gap: 1px;
+    border: 1px solid var(--stroke);
+    border-radius: 2px;
+    background: var(--stroke);
+    overflow: hidden;
+  }
+
+  .report-card,
+  .state-card {
+    border: 0;
+    border-radius: 0;
+    background: var(--bg);
+    box-shadow: none;
+  }
+
+  .report-card {
+    padding: 28px;
+  }
+
+  .report-card:hover {
+    transform: none;
+    background: var(--panel-strong);
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .report-card h3 {
+    color: var(--text);
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.22;
+  }
+
+  .report-card p {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  .report-card__top {
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .report-card__top .date {
+    color: var(--muted);
+  }
+
+  .report-card__top .score {
+    font-weight: 400;
+  }
+
+  .report-card__meta span {
+    border-radius: 2px;
+    border-color: var(--stroke);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports-page {
+    padding: 96px 24px 48px;
+
+    .reports-header h1 {
+      font-size: 60px;
+    }
+  }
+}
