@@ -1,4 +1,3 @@
-
 import api from "../../../lib/AxiosInstance";
 
 export async function register({ userName, email, password }) {
@@ -44,6 +43,26 @@ export async function getCurrentUser() {
     return resposne.data;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+}
+
+export async function forgotPassword({ email }) {
+  try {
+    const response = await api.post("/auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    console.error("Forgot password API error:", error);
+    throw error;
+  }
+}
+
+export async function resetPassword({ token, password }) {
+  try {
+    const response = await api.post("/auth/reset-password", { token, password });
+    return response.data;
+  } catch (error) {
+    console.error("Reset password API error:", error);
     throw error;
   }
 }

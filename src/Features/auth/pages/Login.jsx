@@ -1,12 +1,21 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
+import ResetPasswordModal from "../components/ResetPasswordModal";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const resetTokenFromUrl =
+    searchParams.get("token") ||
+    searchParams.get("resetToken") ||
+    new URLSearchParams(window.location.search).get("token") ||
+    "";
+
   const [form, setForm] = useState({
     email: location.state?.email || "",
     password: "",
@@ -15,6 +24,8 @@ const Login = () => {
   const [touched, setTouched] = useState({});
   const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(Boolean(resetTokenFromUrl));
 
   const navigate = useNavigate();
   const { user, handleLogin, loading } = useAuth();
@@ -25,6 +36,14 @@ const Login = () => {
       navigate("/dashboard", { replace: true });
     }
   }, [user, navigate]);
+
+  // If URL has reset token parameter, open reset password modal
+  useEffect(() => {
+    const token = searchParams.get("token") || searchParams.get("resetToken");
+    if (token) {
+      setIsResetModalOpen(true);
+    }
+  }, [searchParams]);
 
   const validateField = (field, value) => {
     let error = "";
@@ -88,6 +107,12 @@ const Login = () => {
       setServerError(msg);
       toast.error(msg);
     }
+  };
+
+  const handleResetModalClose = () => {
+    setIsResetModalOpen(false);
+    // Clear query parameter from the URL cleanly
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -154,6 +179,13 @@ const Login = () => {
           <div className="input-group">
             <div className="label-row">
               <label htmlFor="login-password">Password</label>
+              <button
+                type="button"
+                className="forgot-pwd-btn"
+                onClick={() => setIsForgotModalOpen(true)}
+              >
+                Forgot Password?
+              </button>
             </div>
             <div className="password-input-wrapper">
               <input
@@ -211,6 +243,19 @@ const Login = () => {
           </p>
         </form>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        initialEmail={form.email}
+      />
+
+      <ResetPasswordModal
+        isOpen={isResetModalOpen}
+        token={resetTokenFromUrl}
+        onClose={handleResetModalClose}
+        onSuccess={handleResetModalClose}
+      />
     </div>
   );
 };
