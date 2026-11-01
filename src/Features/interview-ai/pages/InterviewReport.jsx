@@ -1,6 +1,6 @@
 // InterviewReport.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./InterviewReport.scss";
 import { useInterview } from "../hooks/useInterview";
 import { useAuth } from "../../auth/hooks/useAuth";
@@ -17,7 +17,7 @@ const InterviewReport = () => {
     <>
       <span className="user-chip">{user?.userName || user?.email || "User"}</span>
       <button
-        className="nav-btn primary"
+        className="nav-btn logout-btn"
         onClick={async () => {
           await handleLogout();
           navigate("/login");
@@ -48,29 +48,43 @@ const InterviewReport = () => {
   };
 
   const getSeverityColor = (severity) => {
-    switch(severity) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#10b981';
-      default: return '#64748b';
+    switch (severity?.toLowerCase()) {
+      case "high":
+        return "#ef4444";
+      case "medium":
+        return "#f59e0b";
+      case "low":
+        return "#10b981";
+      default:
+        return "#64748b";
     }
   };
+
+  const navHeader = (
+    <header className="page-nav">
+      <Link to="/dashboard" className="nav-brand">
+        <span className="brand-badge">TIQ</span>
+        <span className="brand-name">Talent IQ</span>
+      </Link>
+      <div className="nav-actions">
+        <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
+          Dashboard
+        </button>
+        <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
+          My Reports
+        </button>
+        {authActions}
+      </div>
+    </header>
+  );
 
   if (loading) {
     return (
       <div className="report-page">
-        <div className="page-nav">
-          <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
-            Home
-          </button>
-          <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
-            My Reports
-          </button>
-          {authActions}
-        </div>
-        <div className="report-container">
+        {navHeader}
+        <main className="report-content">
           <FullPageLoader label="Loading report" />
-        </div>
+        </main>
       </div>
     );
   }
@@ -78,182 +92,178 @@ const InterviewReport = () => {
   if (!hasReport) {
     return (
       <div className="report-page">
-        <div className="page-nav">
-          <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
-            Home
-          </button>
-          <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
-            My Reports
-          </button>
-          {authActions}
-        </div>
-        <div className="report-container">
-          <div className="score-card">
-            <p>Report not found.</p>
+        {navHeader}
+        <main className="report-content">
+          <div className="empty-report-card">
+            <h3>Report Not Found</h3>
+            <p>The requested interview report could not be found or may have been deleted.</p>
+            <button className="action-btn" onClick={() => navigate("/dashboard")}>
+              Create New Strategy
+            </button>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="report-page">
-      <div className="page-nav">
-        <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
-          Home
-        </button>
-        <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
-          My Reports
-        </button>
-        {authActions}
-      </div>
+      {navHeader}
 
-      {/* Header */}
-      <div className="report-header">
-        <div className="header-content">
-          <span className="badge">INTERVIEW ANALYSIS REPORT</span>
-          <h1>
-            Your Personalized <span className="gradient-text">Interview Strategy</span>
-          </h1>
-          <p>Comprehensive analysis based on your profile and target job description</p>
+      <main className="report-content">
+        {/* Header */}
+        <div className="report-header">
+          <span className="badge">Interview Analysis Report</span>
+          <h1>Your Personalized Interview Strategy</h1>
+          <p>Comprehensive strategy based on your experience compared directly to role expectations.</p>
         </div>
-      </div>
 
-      <div className="report-container">
         {/* Score Card */}
         <div className="score-card">
           <div className="score-circle">
-            <svg className="progress-ring" width="180" height="180">
+            <svg className="progress-ring" width="120" height="120" viewBox="0 0 120 120">
               <circle
                 className="progress-ring__bg"
-                stroke="#1e293b"
-                strokeWidth="12"
+                stroke="rgba(255, 255, 255, 0.08)"
+                strokeWidth="8"
                 fill="transparent"
-                r="76"
-                cx="90"
-                cy="90"
+                r="50"
+                cx="60"
+                cy="60"
               />
               <circle
                 className="progress-ring__fill"
                 stroke={getScoreColor(matchScore)}
-                strokeWidth="12"
+                strokeWidth="8"
+                strokeLinecap="round"
                 fill="transparent"
-                r="76"
-                cx="90"
-                cy="90"
+                r="50"
+                cx="60"
+                cy="60"
                 style={{
-                  strokeDasharray: `${2 * Math.PI * 76}`,
-                  strokeDashoffset: `${2 * Math.PI * 76 * (1 - matchScore / 100)}`
+                  strokeDasharray: `${2 * Math.PI * 50}`,
+                  strokeDashoffset: `${2 * Math.PI * 50 * (1 - matchScore / 100)}`,
                 }}
               />
             </svg>
             <div className="score-number">
               <span className="value">{matchScore}%</span>
-              <span className="label">Match Score</span>
+              <span className="label">Match</span>
             </div>
           </div>
           <div className="score-details">
-            <h3>Profile Match Analysis</h3>
-            <p>Based on your experience and skills compared to job requirements</p>
+            <div className="score-heading-row">
+              <h3>Role Compatibility Assessment</h3>
+              <span
+                className="score-pill"
+                style={{
+                  color: getScoreColor(matchScore),
+                  borderColor: `${getScoreColor(matchScore)}40`,
+                  background: `${getScoreColor(matchScore)}15`,
+                }}
+              >
+                {matchScore >= 80 ? "Strong Fit" : matchScore >= 60 ? "Moderate Fit" : "High Growth Opportunity"}
+              </span>
+            </div>
+            <p>
+              Your skills and experience align with core responsibilities. Review question clusters and prioritize
+              target gaps to optimize performance during technical and behavioral rounds.
+            </p>
+            <div className="score-stats">
+              <div className="stat-item">
+                <span className="stat-val">{technicalQuestions.length}</span>
+                <span className="stat-lbl">Technical Prompts</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-val">{behavioralQuestions.length}</span>
+                <span className="stat-lbl">Behavioral Prompts</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-val">{skillGaps.length}</span>
+                <span className="stat-lbl">Identified Gaps</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-val">{preparationPlan.length}</span>
+                <span className="stat-lbl">Plan Days</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="report-tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
+        {/* Clean Segmented Navigation Tabs without redundant icons */}
+        <div className="report-tabs" role="tablist">
+          <button
+            role="tab"
+            aria-selected={activeTab === "overview"}
+            className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
+            onClick={() => setActiveTab("overview")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="2" y="2" width="20" height="20" rx="2.18" />
-              <line x1="8" y1="2" x2="8" y2="22" />
-              <line x1="16" y1="2" x2="16" y2="22" />
-            </svg>
             Overview
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'technical' ? 'active' : ''}`}
-            onClick={() => setActiveTab('technical')}
+          <button
+            role="tab"
+            aria-selected={activeTab === "technical"}
+            className={`tab-btn ${activeTab === "technical" ? "active" : ""}`}
+            onClick={() => setActiveTab("technical")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-            </svg>
-            Technical Questions
+            Technical Questions ({technicalQuestions.length})
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'behavioral' ? 'active' : ''}`}
-            onClick={() => setActiveTab('behavioral')}
+          <button
+            role="tab"
+            aria-selected={activeTab === "behavioral"}
+            className={`tab-btn ${activeTab === "behavioral" ? "active" : ""}`}
+            onClick={() => setActiveTab("behavioral")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Behavioral Questions
+            Behavioral Questions ({behavioralQuestions.length})
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'gaps' ? 'active' : ''}`}
-            onClick={() => setActiveTab('gaps')}
+          <button
+            role="tab"
+            aria-selected={activeTab === "gaps"}
+            className={`tab-btn ${activeTab === "gaps" ? "active" : ""}`}
+            onClick={() => setActiveTab("gaps")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            Skill Gaps
+            Skill Gaps ({skillGaps.length})
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'plan' ? 'active' : ''}`}
-            onClick={() => setActiveTab('plan')}
+          <button
+            role="tab"
+            aria-selected={activeTab === "plan"}
+            className={`tab-btn ${activeTab === "plan" ? "active" : ""}`}
+            onClick={() => setActiveTab("plan")}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
-            Preparation Plan
+            Preparation Plan ({preparationPlan.length} Days)
           </button>
         </div>
 
         {/* Tab Content */}
         <div className="tab-content">
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <div className="overview-tab">
               <div className="overview-grid">
-                {/* Job Description */}
+                {/* Job Description Card */}
                 <div className="info-card">
                   <div className="card-header">
-                    <div className="icon-wrapper">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                      </svg>
-                    </div>
                     <h3>Target Job Description</h3>
                   </div>
                   <div className="card-content">
-                    <pre>{data.jobDescription || ""}</pre>
+                    <pre>{data.jobDescription || "No job description text recorded."}</pre>
                   </div>
                 </div>
 
-                {/* Resume Summary */}
+                {/* Resume Summary Card */}
                 <div className="info-card">
                   <div className="card-header">
-                    <div className="icon-wrapper">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                    </div>
                     <h3>Your Profile Summary</h3>
                   </div>
                   <div className="card-content">
-                    <p className="self-description">{data.selfDescription || ""}</p>
+                    {data.selfDescription && (
+                      <div className="self-desc-block">
+                        <h4>Candidate Notes</h4>
+                        <p className="self-description">{data.selfDescription}</p>
+                      </div>
+                    )}
                     <div className="resume-preview">
-                      <h4>Resume Preview</h4>
-                      <pre>{resumePreview}</pre>
+                      <h4>Resume Snapshot</h4>
+                      <pre>{resumePreview || "No resume text preview available."}</pre>
                     </div>
                   </div>
                 </div>
@@ -261,108 +271,137 @@ const InterviewReport = () => {
             </div>
           )}
 
-          {activeTab === 'technical' && (
+          {activeTab === "technical" && (
             <div className="questions-tab">
-              {technicalQuestions.map((item, index) => (
-                <div className="question-card" key={index}>
-                  <div className="question-header">
-                    <span className="question-number">Q{index + 1}</span>
-                    <h3>{item.question}</h3>
-                  </div>
-                  <div className="question-details">
-                    <div className="intention">
-                      <span className="label">Intention:</span>
-                      <p>{item.intention}</p>
+              {technicalQuestions.length === 0 ? (
+                <p className="empty-tab-text">No technical questions generated for this report.</p>
+              ) : (
+                technicalQuestions.map((item, index) => (
+                  <div className="question-card" key={index}>
+                    <div className="question-header">
+                      <span className="question-number">Q{index + 1}</span>
+                      <h3>{item.question}</h3>
                     </div>
-                    <div className="answer">
-                      <span className="label">Suggested Answer:</span>
-                      <p>{item.answer}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'behavioral' && (
-            <div className="questions-tab">
-              {behavioralQuestions.map((item, index) => (
-                <div className="question-card" key={index}>
-                  <div className="question-header">
-                    <span className="question-number">BQ{index + 1}</span>
-                    <h3>{item.question}</h3>
-                  </div>
-                  <div className="question-details">
-                    <div className="intention">
-                      <span className="label">Intention:</span>
-                      <p>{item.intention}</p>
-                    </div>
-                    <div className="answer">
-                      <span className="label">Suggested Answer:</span>
-                      <p>{item.answer}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeTab === 'gaps' && (
-            <div className="gaps-tab">
-              <div className="gaps-grid">
-                {skillGaps.map((gap, index) => (
-                  <div className="gap-card" key={index} style={{ borderColor: getSeverityColor(gap.severity) }}>
-                    <div className="gap-header">
-                      <span className="gap-skill">{gap.skill}</span>
-                      <span className="gap-severity" style={{ backgroundColor: getSeverityColor(gap.severity) }}>
-                        {gap.severity.toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="gap-progress">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{ 
-                            width: gap.severity === 'high' ? '25%' : gap.severity === 'medium' ? '50%' : '75%',
-                            backgroundColor: getSeverityColor(gap.severity)
-                          }}
-                        ></div>
+                    <div className="question-details">
+                      <div className="intention">
+                        <span className="label">Interviewer Intention</span>
+                        <p>{item.intention}</p>
+                      </div>
+                      <div className="answer">
+                        <span className="label">Recommended Strategy & Answer</span>
+                        <p>{item.answer}</p>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
             </div>
           )}
 
-          {activeTab === 'plan' && (
-            <div className="plan-tab">
-              <div className="plan-timeline">
-                {preparationPlan.map((day, index) => (
-                  <div className="timeline-day" key={index}>
-                    <div className="day-header">
-                      <span className="day-number">Day {day.day}</span>
-                      <h3 className="day-focus">{day.focus}</h3>
+          {activeTab === "behavioral" && (
+            <div className="questions-tab">
+              {behavioralQuestions.length === 0 ? (
+                <p className="empty-tab-text">No behavioral questions generated for this report.</p>
+              ) : (
+                behavioralQuestions.map((item, index) => (
+                  <div className="question-card" key={index}>
+                    <div className="question-header">
+                      <span className="question-number">BQ{index + 1}</span>
+                      <h3>{item.question}</h3>
                     </div>
-                    <div className="day-tasks">
-                      <ul>
-                        {day.tasks.map((task, taskIndex) => (
-                          <li key={taskIndex}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            {task}
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="question-details">
+                      <div className="intention">
+                        <span className="label">Interviewer Intention</span>
+                        <p>{item.intention}</p>
+                      </div>
+                      <div className="answer">
+                        <span className="label">Recommended Strategy & Answer</span>
+                        <p>{item.answer}</p>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === "gaps" && (
+            <div className="gaps-tab">
+              {skillGaps.length === 0 ? (
+                <p className="empty-tab-text">No skill gaps identified. Strong alignment with requirements.</p>
+              ) : (
+                <div className="gaps-grid">
+                  {skillGaps.map((gap, index) => {
+                    const color = getSeverityColor(gap.severity);
+                    return (
+                      <div className="gap-card" key={index}>
+                        <div className="gap-header">
+                          <span className="gap-skill">{gap.skill}</span>
+                          <span
+                            className="gap-severity"
+                            style={{
+                              color: color,
+                              borderColor: `${color}40`,
+                              backgroundColor: `${color}15`,
+                            }}
+                          >
+                            {gap.severity?.toUpperCase() || "MODERATE"}
+                          </span>
+                        </div>
+                        <div className="gap-progress">
+                          <div className="progress-bar">
+                            <div
+                              className="progress-fill"
+                              style={{
+                                width:
+                                  gap.severity?.toLowerCase() === "high"
+                                    ? "35%"
+                                    : gap.severity?.toLowerCase() === "medium"
+                                    ? "65%"
+                                    : "85%",
+                                backgroundColor: color,
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "plan" && (
+            <div className="plan-tab">
+              {preparationPlan.length === 0 ? (
+                <p className="empty-tab-text">No preparation plan details recorded.</p>
+              ) : (
+                <div className="plan-timeline">
+                  {preparationPlan.map((day, index) => (
+                    <div className="timeline-day" key={index}>
+                      <div className="day-header">
+                        <span className="day-number">Day {day.day}</span>
+                        <h3 className="day-focus">{day.focus}</h3>
+                      </div>
+                      <div className="day-tasks">
+                        <ul>
+                          {day.tasks.map((task, taskIndex) => (
+                            <li key={taskIndex}>
+                              <span className="task-bullet" aria-hidden="true" />
+                              <span className="task-text">{task}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };

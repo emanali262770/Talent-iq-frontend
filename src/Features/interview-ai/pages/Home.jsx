@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../pages/Home.scss";
 import { useInterview } from "../hooks/useInterview";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/hooks/useAuth";
 
 const Home = () => {
@@ -127,302 +127,230 @@ const Home = () => {
 
   return (
     <div className="home">
-      <div className="page-nav">
-        <button className="nav-btn primary" onClick={() => navigate("/dashboard")}>
-          Home
-        </button>
-        <button className="nav-btn secondary" onClick={() => navigate("/interview-reports")}>
-          My Reports
-        </button>
-        {user ? (
-          <>
-            <span className="user-chip">{user.userName || user.email || "User"}</span>
-            <button
-              className="nav-btn secondary"
-              onClick={async () => {
-                await handleLogout();
-                navigate("/login");
-              }}
-            >
-              Logout
-            </button>
-          </>
-        ) : (
-          <button className="nav-btn primary" onClick={() => navigate("/login")}>
-            Login
+      {/* SaaS Top Navigation */}
+      <header className="page-nav">
+        <Link to="/dashboard" className="nav-brand">
+          <span className="brand-badge">TIQ</span>
+          <span className="brand-name">Talent IQ</span>
+        </Link>
+        <div className="nav-actions">
+          <button className="nav-btn primary" onClick={() => navigate("/dashboard")}>
+            Dashboard
           </button>
-        )}
-      </div>
-
-      {/* Header */}
-      <div className="header">
-        <div className="header-content">
-          <span className="badge">AI-POWERED INTERVIEW PREP</span>
-          <h1>
-            Create Your Custom{" "}
-            <span className="gradient-text">Interview Plan</span>
-          </h1>
-          <p>
-            Let our AI analyze your job fit requirements & unique profile to
-            build a winning strategy
-          </p>
-        </div>
-      </div>
-
-      <div className="container">
-        {/* Left Side - Job Description */}
-        <div className="card job-section">
-          <div className="section-header">
-            <div className="icon-wrapper">
-              <svg
-                className="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+          <button className="nav-btn secondary" onClick={() => navigate("/interview-reports")}>
+            My Reports
+          </button>
+          {user ? (
+            <>
+              <span className="user-chip">{user.userName || user.email || "User"}</span>
+              <button
+                className="nav-btn logout-btn"
+                onClick={async () => {
+                  await handleLogout();
+                  navigate("/login");
+                }}
               >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-              </svg>
-            </div>
-            <h2>Target Job Description</h2>
-          </div>
-          <p className="section-description">
-            Paste the job description to help our AI understand the role you're
-            targeting
-          </p>
-          <div className="textarea-wrapper">
-            <textarea
-              placeholder="Paste job description here..."
-              value={jobDescription}
-              onChange={(e) => {
-                setJobDescription(e.target.value);
-                if (formErrors.jobDescription) {
-                  setFormErrors((prev) => ({ ...prev, jobDescription: "" }));
-                }
-              }}
-              style={formErrors.jobDescription ? { borderColor: "#ef4444" } : {}}
-            />
-            <span className="char-count">
-              {jobDescription.length} characters
-            </span>
-          </div>
-          {formErrors.jobDescription && (
-            <p style={{ color: "#f87171", fontSize: "12px", marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              {formErrors.jobDescription}
-            </p>
+                Logout
+              </button>
+            </>
+          ) : (
+            <button className="nav-btn login-btn" onClick={() => navigate("/login")}>
+              Login
+            </button>
           )}
         </div>
+      </header>
 
-        {/* Right Side - Your Profile */}
-        <div className="card resume-section">
-          <div className="section-header">
-            <div className="icon-wrapper">
-              <svg
-                className="icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
+      {/* Main Container */}
+      <main className="dashboard-content">
+        {/* Header Section */}
+        <div className="header">
+          <div className="header-content">
+            <span className="badge">AI-Powered Strategy</span>
+            <h1>
+              Create Your Custom <span className="highlight-text">Interview Plan</span>
+            </h1>
+            <p>
+              Analyze your target role against your background to generate high-impact question clusters,
+              strengths, and prioritized prep milestones.
+            </p>
+          </div>
+        </div>
+
+        {/* Form Grid */}
+        <div className="container">
+          {/* Left Side - Job Description */}
+          <div className="card job-section">
+            <div className="section-header">
+              <h2>Target Job Description</h2>
+              <span className="header-hint">Required</span>
             </div>
-            <h2>Your Profile</h2>
+            <p className="section-description">
+              Paste the role requirements, responsibilities, and qualifications you are preparing for.
+            </p>
+            <div className="textarea-wrapper">
+              <textarea
+                placeholder="Paste the complete job description here..."
+                value={jobDescription}
+                onChange={(e) => {
+                  setJobDescription(e.target.value);
+                  if (formErrors.jobDescription) {
+                    setFormErrors((prev) => ({ ...prev, jobDescription: "" }));
+                  }
+                }}
+                className={formErrors.jobDescription ? "has-error" : ""}
+              />
+              <span className="char-count">
+                {jobDescription.length} characters
+              </span>
+            </div>
+            {formErrors.jobDescription && (
+              <p className="field-error-msg" role="alert">
+                {formErrors.jobDescription}
+              </p>
+            )}
           </div>
 
-          {/* Upload Resume */}
-          <div className="upload-section">
-            <label
-              htmlFor="resumeUpload"
-              className={`upload-box ${isDragging ? "dragging" : ""} ${resume ? "has-file" : ""}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              style={formErrors.resume ? { borderColor: "#ef4444" } : {}}
-            >
-              <div className="upload-icon">
-                {resume ? (
+          {/* Right Side - Your Profile */}
+          <div className="card resume-section">
+            <div className="section-header">
+              <h2>Your Profile</h2>
+              <span className="header-hint">Resume + Notes</span>
+            </div>
+
+            {/* Upload Resume */}
+            <div className="upload-section">
+              <label
+                htmlFor="resumeUpload"
+                className={`upload-box ${isDragging ? "dragging" : ""} ${resume ? "has-file" : ""} ${formErrors.resume ? "has-error" : ""}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className="upload-icon" aria-hidden="true">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                ) : (
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="1.75"
                   >
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="17 8 12 3 7 8" />
                     <line x1="12" y1="3" x2="12" y2="15" />
                   </svg>
-                )}
-              </div>
-              <div className="upload-text">
-                {resume ? (
-                  <>
-                    <strong>{resume?.name}</strong>
-                    <span>Click or drag to replace PDF</span>
-                  </>
-                ) : (
-                  <>
-                    <strong>Click to upload resume</strong>
-                    <span>or drag and drop PDF file</span>
-                  </>
-                )}
-              </div>
-            </label>
-            <p className="upload-hint">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              Supported format: PDF only (Max 5MB)
-            </p>
-            {formErrors.resume && (
-              <p style={{ color: "#f87171", fontSize: "12px", marginTop: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                {formErrors.resume}
-              </p>
-            )}
-            <input
-              ref={fileInputRef}
-              id="resumeUpload"
-              type="file"
-              accept="application/pdf,.pdf"
-              onChange={handleFileChange}
-              hidden
-            />
-          </div>
-
-          {/* Self Description */}
-          <div className="self-description-enhanced">
-            <div className="self-description-header">
-              <div className="header-left">
-                <label>Quick Self Description</label>
-                <span className="optional-badge">Optional</span>
-              </div>
-              <div className="character-tip">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <span>Min. 50 characters recommended</span>
-              </div>
+                </div>
+                <div className="upload-text">
+                  {resume ? (
+                    <>
+                      <strong>{resume?.name}</strong>
+                      <span>Click or drag to replace PDF file</span>
+                    </>
+                  ) : (
+                    <>
+                      <strong>Upload Resume (PDF)</strong>
+                      <span>Drag & drop your resume file or click to browse</span>
+                    </>
+                  )}
+                </div>
+              </label>
+              <p className="upload-hint">Supported format: PDF only (up to 5MB)</p>
+              {formErrors.resume && (
+                <p className="field-error-msg" role="alert">
+                  {formErrors.resume}
+                </p>
+              )}
+              <input
+                ref={fileInputRef}
+                id="resumeUpload"
+                type="file"
+                accept="application/pdf,.pdf"
+                onChange={handleFileChange}
+                hidden
+              />
             </div>
 
-            <div className="self-description-container">
-              <div className="input-wrapper">
-                <textarea
-                  placeholder="Tell us about your experience, key achievements, skills, and career goals..."
-                  value={selfDescription}
-                  onChange={(e) => setSelfDescription(e.target.value)}
-                />
-                <div className="textarea-footer">
-                  <div className="character-counter">
-                    <div className="counter-bar">
-                      <div
-                        className="counter-fill"
-                        style={{
-                          width: `${Math.min((selfDescription.length / 200) * 100, 100)}%`,
-                          backgroundColor:
-                            selfDescription.length >= 50
-                              ? "#10b981"
-                              : "#f59e0b",
-                        }}
-                      ></div>
+            {/* Self Description */}
+            <div className="self-description-enhanced">
+              <div className="self-description-header">
+                <div className="header-left">
+                  <label htmlFor="self-description-input">Additional Context & Wins</label>
+                  <span className="optional-badge">Optional</span>
+                </div>
+                <span className="character-tip">Min. 50 characters recommended</span>
+              </div>
+
+              <div className="self-description-container">
+                <div className="input-wrapper">
+                  <textarea
+                    id="self-description-input"
+                    placeholder="Highlight your standout achievements, metrics, transitions, or specific areas you want to emphasize..."
+                    value={selfDescription}
+                    onChange={(e) => setSelfDescription(e.target.value)}
+                  />
+                  <div className="textarea-footer">
+                    <div className="character-counter">
+                      <div className="counter-bar">
+                        <div
+                          className="counter-fill"
+                          style={{
+                            width: `${Math.min((selfDescription.length / 200) * 100, 100)}%`,
+                            backgroundColor:
+                              selfDescription.length >= 50
+                                ? "#10b981"
+                                : "#f59e0b",
+                          }}
+                        ></div>
+                      </div>
+                      <span
+                        className={`counter-text ${selfDescription.length >= 50 ? "sufficient" : "insufficient"}`}
+                      >
+                        {selfDescription.length} / 200 characters
+                      </span>
                     </div>
-                    <span
-                      className={`counter-text ${selfDescription.length >= 50 ? "sufficient" : "insufficient"}`}
-                    >
-                      {selfDescription.length} / 200 characters
-                      {selfDescription.length >= 50 && " ✓"}
-                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Terms Checkbox */}
-          <div className="terms-box" style={formErrors.terms ? { borderColor: "#ef4444" } : {}}>
-            <label className="checkbox-container">
-              <input
-                type="checkbox"
-                checked={agreeTerms}
-                onChange={(e) => {
-                  setAgreeTerms(e.target.checked);
-                  if (formErrors.terms) {
-                    setFormErrors((prev) => ({ ...prev, terms: "" }));
-                  }
-                }}
-              />
-              <span className="checkmark"></span>
-              <span className="checkbox-text">
-                I agree to share my resume and data for analysis to generate a
-                customized interview strategy
+            {/* Terms Checkbox */}
+            <div className={`terms-box ${formErrors.terms ? "has-error" : ""}`}>
+              <label className="checkbox-container">
+                <input
+                  type="checkbox"
+                  checked={agreeTerms}
+                  onChange={(e) => {
+                    setAgreeTerms(e.target.checked);
+                    if (formErrors.terms) {
+                      setFormErrors((prev) => ({ ...prev, terms: "" }));
+                    }
+                  }}
+                />
+                <span className="checkmark"></span>
+                <span className="checkbox-text">
+                  I agree to share my target role and resume for AI-assisted interview analysis.
+                </span>
+              </label>
+              {formErrors.terms && (
+                <p className="field-error-msg" role="alert">
+                  {formErrors.terms}
+                </p>
+              )}
+            </div>
+
+            <button
+              className={`generate-btn ${agreeTerms ? "active" : ""}`}
+              disabled={loading}
+              onClick={handleSubmit}
+            >
+              <span>
+                {loading
+                  ? "Analyzing & Generating Strategy..."
+                  : "Generate Interview Strategy"}
               </span>
-            </label>
-            {formErrors.terms && (
-              <p style={{ color: "#f87171", fontSize: "12px", marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                {formErrors.terms}
-              </p>
-            )}
+            </button>
           </div>
-
-          <button
-            className={`generate-btn ${agreeTerms ? "active" : ""}`}
-            disabled={loading}
-            onClick={handleSubmit}
-          >
-            <span>
-              {loading
-                ? "Generating Strategy..."
-                : "Generate My Interview Strategy"}
-            </span>
-          </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

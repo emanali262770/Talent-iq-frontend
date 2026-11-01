@@ -6,32 +6,26 @@ import { useAuth } from "../../auth/hooks/useAuth";
 
 const featureCards = [
   {
-    icon: "🎯",
     title: "Role Intelligence",
     copy: "Extract hiring signals, expectations, and role priorities from any job description before you start prep.",
   },
   {
-    icon: "🗺️",
     title: "Resume Fit Mapping",
     copy: "Map your strongest evidence directly to the role so your interview narrative is clear and relevant.",
   },
   {
-    icon: "🔮",
     title: "Theme Prediction",
     copy: "Surface likely interview themes and question directions based on role requirements and profile context.",
   },
   {
-    icon: "⚡",
     title: "Strength Signals",
     copy: "Identify what to highlight first so your most convincing stories appear early in the conversation.",
   },
   {
-    icon: "🛡️",
     title: "Gap Visibility",
     copy: "Spot weak areas and prepare clear responses before they become blockers during interviews.",
   },
   {
-    icon: "📁",
     title: "Saved Reports",
     copy: "Store generated strategies and revisit them across multiple opportunities without starting from zero.",
   },
@@ -695,7 +689,6 @@ const Landing = () => {
             <article key={item.title}>
               <div className="feature-top">
                 <span className="feature-num">{String(index + 1).padStart(2, "0")}</span>
-                <span className="feature-icon">{item.icon}</span>
               </div>
               <h3>{item.title}</h3>
               <p>{item.copy}</p>

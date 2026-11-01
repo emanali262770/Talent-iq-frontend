@@ -1,17 +1,19 @@
 .full-page-loader {
-  min-height: 60vh;
+  min-height: 45vh;
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
 }
 
-.spinner {
-  width: 46px;
-  height: 46px;
+.full-page-loader .spinner {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 4px solid rgba(148, 163, 184, 0.25);
-  border-top-color: #f97316;
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-top-color: #d4a853;
   animation: spin 0.8s linear infinite;
 }
 

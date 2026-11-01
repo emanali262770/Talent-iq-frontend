@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./InterviewReports.scss";
 import { useInterview } from "../hooks/useInterview";
 import { useAuth } from "../../auth/hooks/useAuth";
@@ -45,111 +45,112 @@ const InterviewReports = () => {
 
   return (
     <div className="reports-page">
-      <div className="page-nav">
-        <button
-          className="nav-btn secondary"
-          onClick={() => navigate("/dashboard")}
-        >
-          Home
-        </button>
-        <button
-          className="nav-btn primary"
-          onClick={() => navigate("/interview-reports")}
-        >
-          My Reports
-        </button>
-        <span className="user-chip">
-          {user?.userName || user?.email || "User"}
-        </span>
-        <button
-          className="nav-btn secondary"
-          onClick={async () => {
-            await handleLogout();
-            navigate("/login");
-          }}
-        >
-          Logout
-        </button>
-      </div>
-
-      <div className="reports-header">
-        <span className="badge">INTERVIEW HISTORY</span>
-        <h1>Your Interview Reports</h1>
-        <p>Review your previous reports and open any one to see full details.</p>
-      </div>
-
-      {loading ? (
-        <FullPageLoader label="Loading reports" />
-      ) : reportsList && reportsList.length > 0 ? (
-        <div className="reports-grid">
-          {reportsList.filter(Boolean).map((item, index) => {
-            const reportId = item._id || item.id || `report-${index}`;
-            const matchScore = Number(item.matchScore) || 0;
-            const techCount = Array.isArray(item.technicalQuestions)
-              ? item.technicalQuestions.length
-              : 0;
-            const behavCount = Array.isArray(item.behavioralQuestions)
-              ? item.behavioralQuestions.length
-              : 0;
-            const gapsCount = Array.isArray(item.skillGaps)
-              ? item.skillGaps.length
-              : 0;
-
-            return (
-              <button
-                key={reportId}
-                type="button"
-                className="report-card"
-                onClick={() => navigate(`/interview-report/${item._id || item.id}`)}
-              >
-                <div className="report-card__top">
-                  <span className="date">{formatDate(item.createdAt)}</span>
-                  <span
-                    className="score"
-                    style={{ color: getScoreColor(matchScore) }}
-                  >
-                    {matchScore}% match
-                  </span>
-                </div>
-
-                <h3>{shortText(item.jobDescription, 90)}</h3>
-                <p>{shortText(item.selfDescription, 140)}</p>
-
-                <div className="report-card__meta">
-                  <span>{techCount} technical</span>
-                  <span>{behavCount} behavioral</span>
-                  <span>{gapsCount} gaps</span>
-                </div>
-              </button>
-            );
-          })}
+      {/* SaaS Top Navigation */}
+      <header className="page-nav">
+        <Link to="/dashboard" className="nav-brand">
+          <span className="brand-badge">TIQ</span>
+          <span className="brand-name">Talent IQ</span>
+        </Link>
+        <div className="nav-actions">
+          <button
+            className="nav-btn secondary"
+            onClick={() => navigate("/dashboard")}
+          >
+            Dashboard
+          </button>
+          <button
+            className="nav-btn primary"
+            onClick={() => navigate("/interview-reports")}
+          >
+            My Reports
+          </button>
+          <span className="user-chip">
+            {user?.userName || user?.email || "User"}
+          </span>
+          <button
+            className="nav-btn logout-btn"
+            onClick={async () => {
+              await handleLogout();
+              navigate("/login");
+            }}
+          >
+            Logout
+          </button>
         </div>
-      ) : (
-        <div className="state-card">
-          <div className="state-card-content">
-            <svg
-              className="empty-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="12" y1="18" x2="12" y2="12" />
-              <line x1="9" y1="15" x2="15" y2="15" />
-            </svg>
-            <h3>No reports found yet</h3>
-            <p>Generate your first AI interview strategy with a target role and resume.</p>
-            <button
-              className="create-btn"
-              onClick={() => navigate("/dashboard")}
-            >
-              Create New Strategy
-            </button>
+      </header>
+
+      <main className="reports-content">
+        <div className="reports-header">
+          <span className="badge">Interview Archive</span>
+          <h1>Your Interview Reports</h1>
+          <p>Review past role analyses, preparation roadmaps, and tailored question strategies.</p>
+        </div>
+
+        {loading ? (
+          <FullPageLoader label="Loading reports" />
+        ) : reportsList && reportsList.length > 0 ? (
+          <div className="reports-grid">
+            {reportsList.filter(Boolean).map((item, index) => {
+              const reportId = item._id || item.id || `report-${index}`;
+              const matchScore = Number(item.matchScore) || 0;
+              const techCount = Array.isArray(item.technicalQuestions)
+                ? item.technicalQuestions.length
+                : 0;
+              const behavCount = Array.isArray(item.behavioralQuestions)
+                ? item.behavioralQuestions.length
+                : 0;
+              const gapsCount = Array.isArray(item.skillGaps)
+                ? item.skillGaps.length
+                : 0;
+
+              return (
+                <button
+                  key={reportId}
+                  type="button"
+                  className="report-card"
+                  onClick={() => navigate(`/interview-report/${item._id || item.id}`)}
+                >
+                  <div className="report-card__top">
+                    <span className="date">{formatDate(item.createdAt)}</span>
+                    <span
+                      className="score-pill"
+                      style={{
+                        color: getScoreColor(matchScore),
+                        borderColor: `${getScoreColor(matchScore)}40`,
+                        background: `${getScoreColor(matchScore)}15`,
+                      }}
+                    >
+                      {matchScore}% match
+                    </span>
+                  </div>
+
+                  <h3>{shortText(item.jobDescription, 85)}</h3>
+                  <p>{shortText(item.selfDescription, 120)}</p>
+
+                  <div className="report-card__meta">
+                    <span>{techCount} technical</span>
+                    <span>{behavCount} behavioral</span>
+                    <span>{gapsCount} gaps</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="state-card">
+            <div className="state-card-content">
+              <h3>No interview reports yet</h3>
+              <p>Generate your first AI interview strategy with a target role description and resume.</p>
+              <button
+                className="create-btn"
+                onClick={() => navigate("/dashboard")}
+              >
+                Create New Strategy
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
