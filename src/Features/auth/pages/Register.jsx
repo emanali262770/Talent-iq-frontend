@@ -105,7 +105,7 @@ const Register = () => {
 
     if (res?.success) {
       toast.success(res.data?.message || "Account created successfully!");
-      navigate("/dashboard");
+      navigate("/login");
     } else {
       const msg = res?.message || "Registration failed. Please try again.";
       setServerError(msg);

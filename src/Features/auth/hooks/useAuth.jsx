@@ -10,13 +10,6 @@ export const useAuth = () => {
 
     try {
       const data = await register({ userName, email, password });
-      if (data?.token) {
-        localStorage.setItem("token", data.token);
-      }
-      if (data?.user) {
-        setUser(data.user);
-        localStorage.setItem("user", JSON.stringify(data.user));
-      }
       return { success: true, data };
     } catch (error) {
       console.error("Register Error:", error);

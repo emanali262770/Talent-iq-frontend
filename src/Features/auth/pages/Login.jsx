@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login = () => {
+  const location = useLocation();
   const [form, setForm] = useState({
-    email: "",
+    email: location.state?.email || "",
     password: "",
   });
   const [errors, setErrors] = useState({});
