@@ -4,14 +4,20 @@ import { AuthProvider } from "./Features/auth/auth.context";
 import { InterviewProvider } from "./Features/interview-ai/interview.context";
 
 const App = () => {
-
   return (
-
     <AuthProvider>
       <InterviewProvider>
         <Router />
       </InterviewProvider>
-        <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3500}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        theme="dark"
+      />
     </AuthProvider>
   );
 };

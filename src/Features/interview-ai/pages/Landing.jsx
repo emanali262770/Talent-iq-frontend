@@ -479,9 +479,10 @@ const Landing = () => {
         <Link
           to={user ? "/dashboard" : "/"}
           className="brand"
-          title={user ? "Go to Dashboard" : "Talent IQ Home"}
+          title="Talent IQ"
         >
-          <span>TIQ</span>Talent IQ
+          <span className="brand-badge">TIQ</span>
+          <span className="brand-name">Talent IQ</span>
         </Link>
 
         <div className="center-links">
@@ -835,7 +836,8 @@ const Landing = () => {
       {/* Minimal Footer */}
       <footer className="landing-footer">
         <div className="footer-brand">
-          <span>TIQ</span> Talent IQ
+          <span className="brand-badge">TIQ</span>
+          <span className="brand-name">Talent IQ</span>
         </div>
         <p>© 2026 Talent IQ. AI-Powered Interview Strategy. All rights reserved.</p>
       </footer>

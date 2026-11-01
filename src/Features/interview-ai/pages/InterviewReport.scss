@@ -42,25 +42,48 @@
       gap: 10px;
       text-decoration: none;
       color: var(--text);
+      transform: translateZ(0);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+      &:hover {
+        transform: translateY(-1px) translateZ(0);
+
+        .brand-badge {
+          transform: translateY(-1px) translateZ(0);
+          border-color: rgba(212, 168, 83, 0.55);
+          box-shadow: 0 4px 14px rgba(212, 168, 83, 0.25);
+        }
+      }
 
       .brand-badge {
         width: 32px;
         height: 32px;
-        display: grid;
-        place-items: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         border-radius: 8px;
         background: rgba(212, 168, 83, 0.1);
-        border: 1px solid rgba(212, 168, 83, 0.3);
+        border: 1px solid rgba(212, 168, 83, 0.35);
         color: var(--accent-gold);
         font-size: 11px;
         font-weight: 700;
         letter-spacing: 0.04em;
+        flex-shrink: 0;
+        transform: translateZ(0);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .brand-name {
         font-size: 16px;
         font-weight: 600;
-        letter-spacing: -0.01em;
+        letter-spacing: -0.015em;
+        color: #ffffff;
+        border: none;
+        background: transparent;
+        width: auto;
+        height: auto;
+        box-shadow: none;
+        padding: 0;
       }
     }
 
@@ -81,15 +104,17 @@
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      transform: translateZ(0);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 
       &:hover {
         color: var(--text);
         background: rgba(255, 255, 255, 0.04);
         border-color: var(--stroke-bright);
+        transform: translateY(-1.5px) translateZ(0);
       }
 
       &.primary {
@@ -97,6 +122,11 @@
         border-color: var(--stroke-bright);
         color: #ffffff;
         font-weight: 600;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.12);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
       }
 
       &.logout-btn {
@@ -123,6 +153,13 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      transform: translateZ(0);
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: rgba(212, 168, 83, 0.3);
+        background: rgba(212, 168, 83, 0.05);
+      }
     }
   }
 
@@ -152,6 +189,13 @@
       color: var(--accent-gold);
       text-transform: uppercase;
       margin-bottom: 10px;
+      transform: translateZ(0);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+      &:hover {
+        transform: translateY(-1px) translateZ(0);
+        box-shadow: 0 4px 12px rgba(212, 168, 83, 0.2);
+      }
     }
 
     h1 {
@@ -173,7 +217,7 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-     SCORE CARD (SLEEK HERO CARD)
+     3D ELEVATED SCORE CARD
   ───────────────────────────────────────────────────────────── */
   .score-card {
     background: var(--panel);
@@ -186,6 +230,14 @@
     align-items: center;
     gap: 32px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transform: translateZ(0);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+
+    &:hover {
+      transform: translateY(-3px) translateZ(0);
+      border-color: var(--stroke-bright);
+      box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.45), 0 0 20px -2px rgba(212, 168, 83, 0.06);
+    }
 
     .score-circle {
       position: relative;
@@ -319,11 +371,13 @@
       font-weight: 500;
       white-space: nowrap;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transform: translateZ(0);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
       &:hover {
         color: var(--text);
         background: rgba(255, 255, 255, 0.04);
+        transform: translateY(-1px) translateZ(0);
       }
 
       &.active {
@@ -331,6 +385,7 @@
         border-color: var(--stroke-bright);
         color: #ffffff;
         font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
     }
   }
@@ -365,6 +420,14 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+      transform: translateZ(0);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+
+      &:hover {
+        transform: translateY(-3px) translateZ(0);
+        border-color: var(--stroke-bright);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+      }
 
       .card-header {
         padding: 16px 20px;
@@ -444,10 +507,13 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
-      transition: border-color 0.2s ease;
+      transform: translateZ(0);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
 
       &:hover {
+        transform: translateY(-3px) translateZ(0);
         border-color: var(--stroke-bright);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
       }
 
       .question-header {
@@ -531,11 +597,13 @@
         border-radius: 10px;
         padding: 16px 18px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        transition: border-color 0.2s ease, transform 0.2s ease;
+        transform: translateZ(0);
+        transition: border-color 0.2s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
 
         &:hover {
           border-color: var(--stroke-bright);
-          transform: translateY(-1px);
+          transform: translateY(-3px) translateZ(0);
+          box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
         }
 
         .gap-header {
@@ -593,6 +661,14 @@
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        transform: translateZ(0);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+
+        &:hover {
+          transform: translateY(-3px) translateZ(0);
+          border-color: var(--stroke-bright);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+        }
 
         .day-header {
           display: flex;
@@ -668,6 +744,13 @@
     border: 1px solid var(--stroke);
     border-radius: 12px;
     text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateZ(0);
+    transition: transform 0.25s ease;
+
+    &:hover {
+      transform: translateY(-2px) translateZ(0);
+    }
 
     h3 {
       font-size: 18px;
@@ -694,11 +777,17 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transform: translateZ(0);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 
       &:hover {
         background: linear-gradient(135deg, #edd092, #d8a74e);
-        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(212, 168, 83, 0.35);
+        transform: translateY(-2px) translateZ(0);
+      }
+
+      &:active {
+        transform: translateY(0.5px) translateZ(0);
       }
     }
   }

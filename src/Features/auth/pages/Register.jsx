@@ -117,9 +117,9 @@ const Register = () => {
 
   return (
     <div className="auth-page">
-      <Link className="auth-brand" to="/">
-        <span>TIQ</span>
-        Talent IQ
+      <Link className="auth-brand" to="/" title="Talent IQ">
+        <span className="brand-badge">TIQ</span>
+        <span className="brand-name">Talent IQ</span>
       </Link>
       <section className="auth-visual">
         <span className="eyebrow">Get started</span>
