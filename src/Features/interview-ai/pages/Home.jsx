@@ -8,9 +8,10 @@ import { useAuth } from "../../auth/hooks/useAuth";
 const Home = () => {
   const [jobDescription, setJobDescription] = useState("");
   const [selfDescription, setSelfDescription] = useState("");
-  const [resume, setResume] = useState("");
+  const [resume, setResume] = useState(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const { loading, creatInterviewreport } = useInterview();
@@ -27,11 +28,12 @@ const Home = () => {
     if (file) {
       if (!isPdfFile(file)) {
         toast.error("Only PDF files are allowed.");
+        setFormErrors((prev) => ({ ...prev, resume: "Only PDF format is supported." }));
         e.target.value = "";
         return;
       }
-
       setResume(file);
+      setFormErrors((prev) => ({ ...prev, resume: "" }));
     }
   };
 
@@ -52,18 +54,49 @@ const Home = () => {
     if (file) {
       if (!isPdfFile(file)) {
         toast.error("Only PDF files are allowed.");
+        setFormErrors((prev) => ({ ...prev, resume: "Only PDF format is supported." }));
         return;
       }
-
       setResume(file);
+      setFormErrors((prev) => ({ ...prev, resume: "" }));
     }
   };
 
+  const validateHomeForm = () => {
+    const errors = {};
+    if (!jobDescription || !jobDescription.trim()) {
+      errors.jobDescription = "Please enter or paste the target job description.";
+    } else if (jobDescription.trim().length < 20) {
+      errors.jobDescription = "Job description is too brief (minimum 20 characters recommended).";
+    }
+
+    if (!resume) {
+      errors.resume = "Please upload your resume in PDF format.";
+    }
+
+    if (!agreeTerms) {
+      errors.terms = "You must agree to the data analysis terms before generating.";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   async function handleSubmit() {
+    if (!validateHomeForm()) {
+      const firstErr =
+        (!jobDescription.trim() && "Job description is required.") ||
+        (!resume && "Please upload your resume (PDF).") ||
+        (!agreeTerms && "Please agree to the data analysis terms.") ||
+        "Please complete all required fields.";
+      toast.error(firstErr);
+      return;
+    }
+
     try {
       const data = await creatInterviewreport({
         selfDescription,
-        jobDescription,
+        jobDescription: jobDescription.trim(),
         resume,
       });
 
@@ -71,24 +104,33 @@ const Home = () => {
       setJobDescription("");
       setResume(null);
       setAgreeTerms(false);
-      fileInputRef.current.value = "";
+      setFormErrors({});
+      if (fileInputRef.current) fileInputRef.current.value = "";
       toast.success(
-        data.message || "Interview strategy generated successfully!",
+        data?.message || "Interview strategy generated successfully!",
       );
-      
-      
-      navigate(`/interview-report/${data.interviewReport._id}`);
+
+      const reportId = data?.interviewReport?._id || data?.interviewReport?.id || data?._id;
+      if (reportId) {
+        navigate(`/interview-report/${reportId}`);
+      } else {
+        navigate("/interview-reports");
+      }
     } catch (err) {
-      toast.error(
+      const errorMsg =
+        err.response?.data?.message ||
         err.message ||
-          "An error occurred while generating the interview strategy.",
-      );
+        "An error occurred while generating the interview strategy.";
+      toast.error(errorMsg);
     }
   }
 
   return (
     <div className="home">
       <div className="page-nav">
+        <button className="nav-btn primary" onClick={() => navigate("/dashboard")}>
+          Home
+        </button>
         <button className="nav-btn secondary" onClick={() => navigate("/interview-reports")}>
           My Reports
         </button>
@@ -96,7 +138,7 @@ const Home = () => {
           <>
             <span className="user-chip">{user.userName || user.email || "User"}</span>
             <button
-              className="nav-btn primary"
+              className="nav-btn secondary"
               onClick={async () => {
                 await handleLogout();
                 navigate("/login");
@@ -156,12 +198,28 @@ const Home = () => {
             <textarea
               placeholder="Paste job description here..."
               value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
+              onChange={(e) => {
+                setJobDescription(e.target.value);
+                if (formErrors.jobDescription) {
+                  setFormErrors((prev) => ({ ...prev, jobDescription: "" }));
+                }
+              }}
+              style={formErrors.jobDescription ? { borderColor: "#ef4444" } : {}}
             />
             <span className="char-count">
               {jobDescription.length} characters
             </span>
           </div>
+          {formErrors.jobDescription && (
+            <p style={{ color: "#f87171", fontSize: "12px", marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              {formErrors.jobDescription}
+            </p>
+          )}
         </div>
 
         {/* Right Side - Your Profile */}
@@ -190,6 +248,7 @@ const Home = () => {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              style={formErrors.resume ? { borderColor: "#ef4444" } : {}}
             >
               <div className="upload-icon">
                 {resume ? (
@@ -222,12 +281,12 @@ const Home = () => {
                 {resume ? (
                   <>
                     <strong>{resume?.name}</strong>
-                    <span>Click or drag to replace</span>
+                    <span>Click or drag to replace PDF</span>
                   </>
                 ) : (
                   <>
-                    <strong>Click to upload</strong>
-                    <span>or drag and drop</span>
+                    <strong>Click to upload resume</strong>
+                    <span>or drag and drop PDF file</span>
                   </>
                 )}
               </div>
@@ -245,6 +304,16 @@ const Home = () => {
               </svg>
               Supported format: PDF only (Max 5MB)
             </p>
+            {formErrors.resume && (
+              <p style={{ color: "#f87171", fontSize: "12px", marginTop: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {formErrors.resume}
+              </p>
+            )}
             <input
               ref={fileInputRef}
               id="resumeUpload"
@@ -255,7 +324,7 @@ const Home = () => {
             />
           </div>
 
-          {/* Self Description - Enhanced Version without Prompt Cards */}
+          {/* Self Description */}
           <div className="self-description-enhanced">
             <div className="self-description-header">
               <div className="header-left">
@@ -311,12 +380,17 @@ const Home = () => {
           </div>
 
           {/* Terms Checkbox */}
-          <div className="terms-box">
+          <div className="terms-box" style={formErrors.terms ? { borderColor: "#ef4444" } : {}}>
             <label className="checkbox-container">
               <input
                 type="checkbox"
                 checked={agreeTerms}
-                onChange={(e) => setAgreeTerms(e.target.checked)}
+                onChange={(e) => {
+                  setAgreeTerms(e.target.checked);
+                  if (formErrors.terms) {
+                    setFormErrors((prev) => ({ ...prev, terms: "" }));
+                  }
+                }}
               />
               <span className="checkmark"></span>
               <span className="checkbox-text">
@@ -324,11 +398,21 @@ const Home = () => {
                 customized interview strategy
               </span>
             </label>
+            {formErrors.terms && (
+              <p style={{ color: "#f87171", fontSize: "12px", marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {formErrors.terms}
+              </p>
+            )}
           </div>
 
           <button
             className={`generate-btn ${agreeTerms ? "active" : ""}`}
-            disabled={!agreeTerms || loading}
+            disabled={loading}
             onClick={handleSubmit}
           >
             <span>

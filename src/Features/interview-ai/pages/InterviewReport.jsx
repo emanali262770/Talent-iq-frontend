@@ -60,7 +60,7 @@ const InterviewReport = () => {
     return (
       <div className="report-page">
         <div className="page-nav">
-          <button className="nav-btn secondary" onClick={() => navigate("/")}>
+          <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
             Home
           </button>
           <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
@@ -79,7 +79,7 @@ const InterviewReport = () => {
     return (
       <div className="report-page">
         <div className="page-nav">
-          <button className="nav-btn secondary" onClick={() => navigate("/")}>
+          <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
             Home
           </button>
           <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>
@@ -99,7 +99,7 @@ const InterviewReport = () => {
   return (
     <div className="report-page">
       <div className="page-nav">
-        <button className="nav-btn secondary" onClick={() => navigate("/")}>
+        <button className="nav-btn secondary" onClick={() => navigate("/dashboard")}>
           Home
         </button>
         <button className="nav-btn primary" onClick={() => navigate("/interview-reports")}>

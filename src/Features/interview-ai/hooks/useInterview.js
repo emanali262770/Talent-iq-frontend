@@ -9,6 +9,7 @@ import {
 export const useInterview = () => {
   const { loading, setLoading, report, setReport, reports, setReports } =
     useContext(InterviewContext);
+
   const creatInterviewreport = async ({
     selfDescription,
     jobDescription,
@@ -21,11 +22,11 @@ export const useInterview = () => {
         jobDescription,
         resume,
       });
-      setReport(data.interviewReport);
-        return data; 
+      setReport(data.interviewReport || data);
+      return data;
     } catch (error) {
-      console.log(error);
-      throw error; 
+      console.error("Error generating report:", error);
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -35,31 +36,42 @@ export const useInterview = () => {
     try {
       setLoading(true);
       const data = await getInterviewReport(reportId);
-      setReport(data.interviewReport);
+      setReport(data.interviewReport || data);
+      return data;
     } catch (error) {
-      console.log(error);
+      console.error("Error getting report by id:", error);
     } finally {
       setLoading(false);
     }
   };
+
   const getAllInterviewReport = async () => {
     try {
       setLoading(true);
       const data = await getAllInterviewReports();
-      setReports(data.interviewReport || data.interviewReports || []);
+      const reportList = Array.isArray(data)
+        ? data
+        : (data?.interviewReport || data?.interviewReports || data?.reports || data?.data || []);
+      setReports(Array.isArray(reportList) ? reportList : []);
+      return reportList;
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching all reports:", error);
       setReports([]);
+      return [];
     } finally {
       setLoading(false);
     }
   };
-  return{
+
+  return {
     creatInterviewreport,
     getInterviewReportById,
     getAllInterviewReport,
     loading,
+    setLoading,
     report,
-    reports
-  }
+    setReport,
+    reports,
+    setReports,
+  };
 };

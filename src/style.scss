@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap");
 
 *{
     margin: 0;
@@ -19,16 +19,16 @@ html,body,#root{
   --bg-2: #0a0a0f;
   --panel: rgba(255, 255, 255, 0.035);
   --panel-strong: rgba(255, 255, 255, 0.055);
-  --stroke: rgba(255, 255, 255, 0.09);
-  --stroke-bright: rgba(255, 255, 255, 0.22);
+  --stroke: rgba(255, 255, 255, 0.12);
+  --stroke-bright: rgba(255, 255, 255, 0.28);
   --text: #f0ece4;
-  --muted: rgba(240, 236, 228, 0.46);
+  --muted: rgba(240, 236, 228, 0.72);
   --accent: #c8b89a;
   --gold: #d4a853;
 
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
+  grid-template-columns: minmax(0, 1fr) 440px;
   align-items: center;
   gap: clamp(40px, 7vw, 120px);
   padding: 120px clamp(24px, 7vw, 120px) 80px;
@@ -120,8 +120,8 @@ html,body,#root{
     gap: 14px;
     margin-bottom: 24px;
     color: var(--muted);
-    font-size: 10px;
-    font-weight: 400;
+    font-size: 11px;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.22em;
 
@@ -162,7 +162,7 @@ html,body,#root{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1px;
   border: 1px solid var(--stroke);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
   background: var(--stroke);
 
@@ -173,8 +173,8 @@ html,body,#root{
     padding: 0 16px;
     background: var(--bg-2);
     color: var(--muted);
-    font-size: 9px;
-    font-weight: 400;
+    font-size: 10px;
+    font-weight: 500;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.2em;
@@ -190,20 +190,20 @@ html,body,#root{
 }
 
 .login-card {
-  width: min(420px, 100%);
-  padding: 44px 40px;
-  background: var(--panel);
-  backdrop-filter: blur(24px);
+  width: min(440px, 100%);
+  padding: 44px 38px;
+  background: rgba(15, 15, 20, 0.75);
+  backdrop-filter: blur(28px);
   border: 1px solid var(--stroke);
-  border-radius: 2px;
-  box-shadow: 0 48px 100px rgba(0, 0, 0, 0.45);
+  border-radius: 6px;
+  box-shadow: 0 48px 100px rgba(0, 0, 0, 0.55);
   text-align: left;
 
   h2 {
     margin: 0;
     color: var(--text);
     font-family: "Bebas Neue", sans-serif;
-    font-size: 56px;
+    font-size: 52px;
     font-weight: 400;
     line-height: 0.95;
     letter-spacing: 0.06em;
@@ -212,53 +212,189 @@ html,body,#root{
 
   .subtitle {
     color: var(--muted);
-    margin: 14px 0 34px;
+    margin: 12px 0 28px;
     font-size: 14px;
     font-weight: 300;
-    line-height: 1.8;
+    line-height: 1.7;
   }
 
   form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
+  }
+}
+
+.form-server-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 6px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: #ef4444;
+    margin-top: 1px;
   }
 }
 
 .input-group {
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
   label {
-    font-size: 10px;
-    margin-bottom: 9px;
+    font-size: 11px;
     display: block;
     color: var(--muted);
-    font-weight: 400;
-    letter-spacing: 0.18em;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+  }
+
+  .password-input-wrapper {
+    position: relative;
+    width: 100%;
+
+    input {
+      padding-right: 42px;
+    }
+
+    .pwd-toggle-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--text);
+      }
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
   }
 
   input {
     width: 100%;
     min-height: 48px;
     padding: 0 14px;
-    border-radius: 2px;
+    border-radius: 4px;
     border: 1px solid var(--stroke);
-    background: rgba(10, 10, 15, 0.68);
+    background: rgba(10, 10, 15, 0.72);
     color: var(--text);
     font-family: "DM Sans", "Helvetica Neue", sans-serif;
     font-size: 14px;
-    font-weight: 300;
+    font-weight: 400;
     outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 
     &::placeholder {
-      color: rgba(240, 236, 228, 0.28);
+      color: rgba(240, 236, 228, 0.35);
     }
 
     &:focus {
       border-color: var(--stroke-bright);
-      box-shadow: 0 0 0 4px rgba(212, 168, 83, 0.08);
+      box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.12);
+    }
+
+    &.has-error {
+      border-color: rgba(239, 68, 68, 0.85);
+      background: rgba(239, 68, 68, 0.05);
+
+      &:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+      }
+    }
+  }
+
+  .field-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #f87171;
+    margin-top: 2px;
+    font-weight: 400;
+
+    svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+    }
+  }
+
+  .password-strength {
+    margin-top: 6px;
+
+    .strength-bars {
+      display: flex;
+      gap: 4px;
+      height: 4px;
+      margin-bottom: 4px;
+
+      .bar {
+        flex: 1;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 2px;
+        transition: background 0.3s ease;
+
+        &.active-weak {
+          background: #ef4444;
+        }
+
+        &.active-medium {
+          background: #f59e0b;
+        }
+
+        &.active-strong {
+          background: #10b981;
+        }
+      }
+    }
+
+    .strength-text {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+
+      span.score-label {
+        font-weight: 500;
+
+        &.weak { color: #ef4444; }
+        &.medium { color: #f59e0b; }
+        &.strong { color: #10b981; }
+      }
     }
   }
 }
@@ -267,40 +403,53 @@ html,body,#root{
   min-height: 48px;
   padding: 0 28px;
   border: 1px solid var(--stroke-bright);
-  border-radius: 2px;
-  background: transparent;
-  color: var(--text);
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--bg);
   font-family: "DM Sans", "Helvetica Neue", sans-serif;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 
-  &:hover {
-    background: var(--text);
-    color: var(--bg);
-    border-color: var(--text);
+  &:hover:not(:disabled) {
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
   }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--stroke);
   }
 }
 
 .register-link {
   margin-top: 12px;
   font-size: 13px;
-  font-weight: 300;
+  font-weight: 400;
   color: var(--muted);
   text-align: center;
 
   .span {
-    color: var(--accent);
-    font-weight: 400;
+    color: var(--gold);
+    font-weight: 500;
     cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: #fff;
+    }
   }
 }
 
@@ -321,15 +470,16 @@ html,body,#root{
 
 @media (max-width: 640px) {
   .auth-page {
-    padding: 96px 24px 48px;
+    padding: 96px 20px 48px;
   }
 
   .auth-brand {
     min-height: 64px;
+    padding: 0 20px;
   }
 
   .auth-visual h1 {
-    font-size: 64px;
+    font-size: 58px;
   }
 
   .auth-metrics {
@@ -337,6 +487,10 @@ html,body,#root{
   }
 
   .login-card {
-    padding: 34px 24px;
+    padding: 30px 20px;
+
+    h2 {
+      font-size: 44px;
+    }
   }
 }

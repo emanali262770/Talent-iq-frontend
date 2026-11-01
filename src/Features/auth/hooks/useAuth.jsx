@@ -10,9 +10,21 @@ export const useAuth = () => {
 
     try {
       const data = await register({ userName, email, password });
-      setUser(data.user);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data?.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      return { success: true, data };
     } catch (error) {
       console.error("Register Error:", error);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Registration failed. Please check your details and try again.";
+      return { success: false, message, error };
     } finally {
       setLoading(false);
     }
@@ -23,9 +35,21 @@ export const useAuth = () => {
 
     try {
       const data = await login({ email, password });
-      setUser(data.user);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (data?.user) {
+        setUser(data.user);
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+      return { success: true, data };
     } catch (error) {
       console.error("Login Error:", error);
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Invalid email or password. Please try again.";
+      return { success: false, message, error };
     } finally {
       setLoading(false);
     }
@@ -36,20 +60,23 @@ export const useAuth = () => {
 
     try {
       await logout();
-      setUser(null);
     } catch (error) {
       console.error("Logout Error:", error);
     } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
       setLoading(false);
     }
   }
 
   return {
     user,
+    setUser,
     loading,
+    setLoading,
     handleRegister,
     handleLogin,
     handleLogout,
-  
   };
 };
