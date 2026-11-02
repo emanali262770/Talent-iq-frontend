@@ -1,0 +1,359 @@
+// MockInterviewReportView.jsx
+import React from "react";
+import "./MockInterview.scss";
+
+const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview }) => {
+  if (!report) {
+    return (
+      <div className="mock-empty-report">
+        <div className="empty-report-card">
+          <div className="empty-icon" aria-hidden="true">🎯</div>
+          <h3>No Mock Interview Completed Yet</h3>
+          <p>
+            Take the AI-powered mock interview to practice 16 targeted questions tailored to your job description.
+            Your answers will be evaluated to generate a comprehensive preparation report with personalized feedback and benchmark answers.
+          </p>
+          <button className="action-btn" onClick={onGoToInterview}>
+            Start Mock Interview Now
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const {
+    overallScore = 0,
+    technicalScore = 0,
+    scenarioScore = 0,
+    communicationScore = 0,
+    readinessVerdict = "Strong Fit",
+    verdictSummary = "",
+    answeredCount = 0,
+    totalQuestions = 16,
+    elapsedSeconds = 0,
+    technicalStrengths = [],
+    areasForImprovement = [],
+    questionEvaluations = [],
+    categoryBreakdown = [],
+  } = report;
+
+  const getScoreColor = (score) => {
+    if (score >= 80) return "#10b981";
+    if (score >= 60) return "#f59e0b";
+    return "#ef4444";
+  };
+
+  const getSeverityColor = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case "high":
+        return "#ef4444";
+      case "medium":
+        return "#f59e0b";
+      case "low":
+        return "#10b981";
+      default:
+        return "#64748b";
+    }
+  };
+
+  const formatDuration = (secs) => {
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = secs % 60;
+    if (mins === 0) return `${remainingSecs}s`;
+    return `${mins}m ${remainingSecs}s`;
+  };
+
+  return (
+    <div className="mock-report-container">
+      {/* 3D Elevated Score Card matching existing layout */}
+      <div className="score-card mock-score-card">
+        <div className="score-circle">
+          <svg className="progress-ring" width="120" height="120" viewBox="0 0 120 120">
+            <circle
+              className="progress-ring__bg"
+              stroke="rgba(255, 255, 255, 0.08)"
+              strokeWidth="8"
+              fill="transparent"
+              r="50"
+              cx="60"
+              cy="60"
+            />
+            <circle
+              className="progress-ring__fill"
+              stroke={getScoreColor(overallScore)}
+              strokeWidth="8"
+              strokeLinecap="round"
+              fill="transparent"
+              r="50"
+              cx="60"
+              cy="60"
+              style={{
+                strokeDasharray: `${2 * Math.PI * 50}`,
+                strokeDashoffset: `${2 * Math.PI * 50 * (1 - overallScore / 100)}`,
+              }}
+            />
+          </svg>
+          <div className="score-number">
+            <span className="value">{overallScore}%</span>
+            <span className="label">Performance</span>
+          </div>
+        </div>
+
+        <div className="score-details">
+          <div className="score-heading-row">
+            <h3>Mock Interview Readiness Rating</h3>
+            <span
+              className="score-pill"
+              style={{
+                color: getScoreColor(overallScore),
+                borderColor: `${getScoreColor(overallScore)}40`,
+                background: `${getScoreColor(overallScore)}15`,
+              }}
+            >
+              {readinessVerdict}
+            </span>
+          </div>
+          <p>{verdictSummary}</p>
+
+          <div className="score-stats">
+            <div className="stat-item">
+              <span className="stat-val">{technicalScore}%</span>
+              <span className="stat-lbl">Technical Concepts</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-val">{scenarioScore}%</span>
+              <span className="stat-lbl">Scenario Solving</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-val">{communicationScore}%</span>
+              <span className="stat-lbl">Communication</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-val">{answeredCount}/{totalQuestions}</span>
+              <span className="stat-lbl">Answered</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-val">{formatDuration(elapsedSeconds)}</span>
+              <span className="stat-lbl">Duration</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Competency Breakdown Grid */}
+      <div className="mock-breakdown-section">
+        <h3 className="section-title">Competency Evaluation Breakdown</h3>
+        <div className="breakdown-grid">
+          {categoryBreakdown.map((cat, idx) => {
+            const color = getScoreColor(cat.score);
+            return (
+              <div key={idx} className="breakdown-card">
+                <div className="card-top">
+                  <span className="cat-name">{cat.name}</span>
+                  <span className="cat-score" style={{ color }}>
+                    {cat.score}%
+                  </span>
+                </div>
+                <div className="cat-progress-track">
+                  <div
+                    className="cat-progress-fill"
+                    style={{ width: `${cat.score}%`, backgroundColor: color }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Strengths & Priority Improvement Gaps */}
+      <div className="strengths-gaps-grid">
+        {/* Technical Strengths */}
+        <div className="info-card strengths-card">
+          <div className="card-header">
+            <h3>🏆 Demonstrated Technical Strengths</h3>
+          </div>
+          <div className="card-content">
+            <div className="strengths-list">
+              {technicalStrengths.map((item, idx) => (
+                <div key={idx} className="strength-item">
+                  <div className="strength-bullet" aria-hidden="true">✓</div>
+                  <div className="strength-body">
+                    <h4>{item.title}</h4>
+                    <p>{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Areas for Improvement / Skill Gaps */}
+        <div className="info-card gaps-card">
+          <div className="card-header">
+            <h3>🎯 Priority Areas for Improvement</h3>
+          </div>
+          <div className="card-content">
+            <div className="gaps-list">
+              {areasForImprovement.map((gap, idx) => {
+                const color = getSeverityColor(gap.severity);
+                return (
+                  <div key={idx} className="gap-item-block">
+                    <div className="gap-top-row">
+                      <span className="gap-skill-name">{gap.skill}</span>
+                      <span
+                        className="gap-severity-pill"
+                        style={{
+                          color,
+                          borderColor: `${color}40`,
+                          backgroundColor: `${color}15`,
+                        }}
+                      >
+                        {gap.severity?.toUpperCase()} PRIORITY
+                      </span>
+                    </div>
+                    <p className="gap-desc">{gap.suggestion}</p>
+                    <div className="gap-progress-bar">
+                      <div
+                        className="gap-progress-fill"
+                        style={{
+                          width:
+                            gap.severity === "high"
+                              ? "35%"
+                              : gap.severity === "medium"
+                              ? "65%"
+                              : "90%",
+                          backgroundColor: color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Question-by-Question Outcome */}
+      <div className="detailed-questions-section">
+        <div className="section-header-row">
+          <div>
+            <h3 className="section-title">Question-by-Question Detailed Assessment</h3>
+            <p className="section-subtitle">
+              Review your recorded answers against AI feedback, identified strengths, and recommended benchmark solutions.
+            </p>
+          </div>
+          <div className="report-action-buttons">
+            <button
+              type="button"
+              className="secondary-btn"
+              onClick={() => window.print()}
+            >
+              Print / Save PDF
+            </button>
+            <button
+              type="button"
+              className="action-btn"
+              onClick={onRetakeInterview}
+            >
+              Retake Mock Interview
+            </button>
+          </div>
+        </div>
+
+        <div className="questions-tab">
+          {questionEvaluations.map((item, index) => {
+            const scoreColor = getScoreColor(item.score);
+            return (
+              <div className="question-card mock-eval-card" key={item.id || index}>
+                <div className="question-header">
+                  <div className="header-left">
+                    <span className="question-number">Q{item.number}</span>
+                    <span className={`type-tag ${item.type}`}>{item.typeLabel}</span>
+                    <span className="cat-tag">{item.category}</span>
+                  </div>
+                  <div className="header-right">
+                    <span
+                      className="score-pill"
+                      style={{
+                        color: scoreColor,
+                        borderColor: `${scoreColor}40`,
+                        background: `${scoreColor}15`,
+                      }}
+                    >
+                      Score: {item.score}/100
+                    </span>
+                  </div>
+                </div>
+
+                <div className="question-title-area">
+                  <h3>{item.question}</h3>
+                  <div className="intention">
+                    <span className="label">Interviewer Focus & Intention</span>
+                    <p>{item.intention}</p>
+                  </div>
+                </div>
+
+                <div className="question-details">
+                  {/* Candidate Answer */}
+                  <div className="candidate-answer-block">
+                    <div className="block-label-row">
+                      <span className="label">Your Submitted Response</span>
+                      <span className="answer-stats">{item.wordCount} words</span>
+                    </div>
+                    <div className="user-response-text">
+                      {item.candidateAnswer || "No answer submitted."}
+                    </div>
+                  </div>
+
+                  {/* AI Feedback & Key Points */}
+                  <div className="ai-feedback-block">
+                    <span className="label feedback-label">AI Evaluator Feedback</span>
+                    <div className="feedback-columns">
+                      <div className="feedback-col strengths-col">
+                        <h5>Key Strengths:</h5>
+                        <ul>
+                          {item.strengths.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="feedback-col gaps-col">
+                        <h5>Areas to Enhance:</h5>
+                        <ul>
+                          {item.areasForImprovement.map((g, i) => (
+                            <li key={i}>{g}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommended Ideal Answer */}
+                  <div className="answer">
+                    <span className="label">Recommended Benchmark Answer & Key Takeaway</span>
+                    <p>{item.idealAnswer}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Actions */}
+      <div className="mock-report-footer">
+        <button
+          type="button"
+          className="action-btn retake-btn"
+          onClick={onRetakeInterview}
+        >
+          Practice Again (Retake Interview)
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default MockInterviewReportView;

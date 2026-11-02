@@ -5,11 +5,19 @@ import "./InterviewReport.scss";
 import { useInterview } from "../hooks/useInterview";
 import { useAuth } from "../../auth/hooks/useAuth";
 import FullPageLoader from "../../../components/FullPageLoader";
+import MockInterviewSession from "../components/MockInterview/MockInterviewSession";
+import MockInterviewReportView from "../components/MockInterview/MockInterviewReportView";
+import {
+  getSavedMockReport,
+  saveMockReport,
+  clearSavedMockSession,
+} from "../services/mockInterviewAi.service";
 
 const InterviewReport = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [mockReport, setMockReport] = useState(() => getSavedMockReport(id));
   const { loading, getInterviewReportById, report } = useInterview();
   const { user, handleLogout } = useAuth();
 
@@ -30,6 +38,10 @@ const InterviewReport = () => {
 
   useEffect(() => {
     getInterviewReportById(id);
+    if (id) {
+      const saved = getSavedMockReport(id);
+      setMockReport(saved);
+    }
   }, [id]);
 
   const data = report || {};
@@ -232,6 +244,22 @@ const InterviewReport = () => {
           >
             Preparation Plan ({preparationPlan.length} Days)
           </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === "mock"}
+            className={`tab-btn ${activeTab === "mock" ? "active" : ""}`}
+            onClick={() => setActiveTab("mock")}
+          >
+            Mock Interview
+          </button>
+          <button
+            role="tab"
+            aria-selected={activeTab === "mock-report"}
+            className={`tab-btn ${activeTab === "mock-report" ? "active" : ""}`}
+            onClick={() => setActiveTab("mock-report")}
+          >
+            Mock Interview Report{mockReport ? ` (${mockReport.overallScore}%)` : ""}
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -398,6 +426,38 @@ const InterviewReport = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "mock" && (
+            <div className="mock-tab">
+              <MockInterviewSession
+                reportId={id}
+                jobDescription={data.jobDescription}
+                selfDescription={data.selfDescription}
+                resume={data.resume}
+                existingTechQuestions={technicalQuestions}
+                onFinishInterview={(evaluatedReport) => {
+                  saveMockReport(id, evaluatedReport);
+                  setMockReport(evaluatedReport);
+                  setActiveTab("mock-report");
+                }}
+              />
+            </div>
+          )}
+
+          {activeTab === "mock-report" && (
+            <div className="mock-report-tab">
+              <MockInterviewReportView
+                report={mockReport}
+                onRetakeInterview={() => {
+                  clearSavedMockSession(id);
+                  setActiveTab("mock");
+                }}
+                onGoToInterview={() => {
+                  setActiveTab("mock");
+                }}
+              />
             </div>
           )}
         </div>
