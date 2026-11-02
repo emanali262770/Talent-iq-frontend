@@ -1,5 +1,5 @@
 // MockInterview.scss
-// Styles for Mock Interview session and Mock Preparation Report tabs
+// Styles for Mock Interview session and Preparation Report tabs
 
 /* ─────────────────────────────────────────────────────────────
    1. SETUP / BRIEFING SCREEN
@@ -19,7 +19,6 @@
     .mock-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
       padding: 4px 12px;
       background: var(--accent-gold-subtle);
       border: 1px solid rgba(212, 168, 83, 0.28);
@@ -30,11 +29,6 @@
       color: var(--accent-gold);
       text-transform: uppercase;
       margin-bottom: 12px;
-
-      .sparkle-icon {
-        color: var(--accent-gold);
-        font-size: 12px;
-      }
     }
 
     h2 {
@@ -51,6 +45,10 @@
       color: var(--text-muted);
       max-width: 780px;
       margin: 0;
+
+      strong {
+        color: #ffffff;
+      }
     }
   }
 
@@ -66,20 +64,14 @@
       border-radius: 10px;
       padding: 16px;
       display: flex;
-      align-items: flex-start;
-      gap: 12px;
+      flex-direction: column;
+      gap: 6px;
       transition: all 0.22s ease;
 
       &:hover {
         background: rgba(255, 255, 255, 0.04);
         border-color: var(--stroke-bright);
         transform: translateY(-2px);
-      }
-
-      .brief-icon {
-        font-size: 22px;
-        flex-shrink: 0;
-        margin-top: 2px;
       }
 
       .brief-details {
@@ -175,7 +167,7 @@
 
     .start-mock-btn {
       min-height: 44px;
-      padding: 0 26px;
+      padding: 0 28px;
       background: linear-gradient(135deg, #e4be74, #c9983e);
       border: 1px solid rgba(212, 168, 83, 0.4);
       border-radius: 8px;
@@ -198,15 +190,6 @@
 
       &:active {
         transform: translateY(0);
-      }
-
-      .btn-arrow {
-        font-size: 16px;
-        transition: transform 0.2s ease;
-      }
-
-      &:hover .btn-arrow {
-        transform: translateX(3px);
       }
     }
   }
@@ -321,13 +304,36 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   3. ACTIVE INTERVIEW SESSION
+   3. ACTIVE INTERVIEW SESSION & 30-SECOND COUNTDOWN
 ───────────────────────────────────────────────────────────── */
 .mock-session-container {
   display: flex;
   flex-direction: column;
   gap: 18px;
   animation: fadeIn 0.25s ease-out;
+
+  /* Auto-Timeout Toast Banner */
+  .timeout-toast-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 8px;
+    color: #fde68a;
+    font-size: 13px;
+    font-weight: 500;
+    animation: fadeIn 0.25s ease;
+
+    .toast-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #f59e0b;
+      box-shadow: 0 0 8px #f59e0b;
+    }
+  }
 
   /* Top Session Header */
   .mock-session-header {
@@ -393,22 +399,74 @@
       align-items: center;
       gap: 10px;
 
+      /* 30-Second Countdown Clock Badge */
+      .question-countdown-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(8, 10, 16, 0.7);
+        border: 1px solid rgba(212, 168, 83, 0.3);
+        border-radius: 8px;
+        color: #e2e8f0;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.25s ease;
+
+        .countdown-label {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: var(--text-muted);
+          letter-spacing: 0.04em;
+        }
+
+        .countdown-val {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--accent-gold);
+          font-variant-numeric: tabular-nums;
+        }
+
+        &.warning {
+          border-color: rgba(245, 158, 11, 0.6);
+          background: rgba(245, 158, 11, 0.1);
+
+          .countdown-val {
+            color: #f59e0b;
+          }
+        }
+
+        &.critical {
+          border-color: rgba(239, 68, 68, 0.7);
+          background: rgba(239, 68, 68, 0.15);
+          animation: criticalPulse 1s infinite;
+
+          .countdown-val {
+            color: #ef4444;
+          }
+        }
+      }
+
       .timer-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 6px 12px;
-        background: rgba(8, 10, 16, 0.6);
+        background: rgba(8, 10, 16, 0.5);
         border: 1px solid var(--stroke);
         border-radius: 8px;
-        color: #e2e8f0;
-        font-size: 13px;
-        font-weight: 600;
+        color: #94a3b8;
+        font-size: 12.5px;
         font-variant-numeric: tabular-nums;
 
-        .timer-icon {
-          font-size: 12px;
-          color: var(--accent-gold);
+        .timer-label {
+          font-size: 10.5px;
+          text-transform: uppercase;
+        }
+
+        .timer-val {
+          color: #e2e8f0;
+          font-weight: 600;
         }
       }
 
@@ -426,67 +484,6 @@
           color: #fca5a5;
           border-color: rgba(239, 68, 68, 0.4);
           background: rgba(239, 68, 68, 0.08);
-        }
-      }
-    }
-  }
-
-  /* Question Ribbon Navigation */
-  .question-ribbon {
-    display: flex;
-    gap: 6px;
-    padding: 6px;
-    background: rgba(10, 13, 20, 0.6);
-    border: 1px solid var(--stroke);
-    border-radius: 10px;
-    overflow-x: auto;
-
-    &::-webkit-scrollbar {
-      height: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: var(--stroke-bright);
-      border-radius: 2px;
-    }
-
-    .ribbon-item {
-      min-width: 38px;
-      height: 36px;
-      padding: 0 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      border-radius: 6px;
-      border: 1px solid transparent;
-      background: rgba(255, 255, 255, 0.02);
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      flex-shrink: 0;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.06);
-        color: #ffffff;
-      }
-
-      &.current {
-        background: rgba(212, 168, 83, 0.15);
-        border-color: rgba(212, 168, 83, 0.45);
-        color: var(--accent-gold);
-        box-shadow: 0 0 10px rgba(212, 168, 83, 0.2);
-      }
-
-      &.answered {
-        border-color: rgba(16, 185, 129, 0.3);
-        color: #a7f3d0;
-
-        .ribbon-check {
-          font-size: 10px;
-          color: #10b981;
         }
       }
     }
@@ -672,6 +669,13 @@
             gap: 6px;
             transition: all 0.2s ease;
 
+            .record-dot {
+              width: 7px;
+              height: 7px;
+              border-radius: 50%;
+              background: #ef4444;
+            }
+
             &:hover {
               background: rgba(239, 68, 68, 0.15);
               border-color: rgba(239, 68, 68, 0.45);
@@ -682,24 +686,10 @@
               border-color: #ef4444;
               color: #ffffff;
               animation: pulseRecord 1.5s infinite;
-            }
-          }
 
-          .sample-answer-btn {
-            min-height: 30px;
-            padding: 0 10px;
-            background: transparent;
-            border: 1px solid var(--stroke);
-            border-radius: 6px;
-            color: var(--text-muted);
-            font-size: 11.5px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-              color: var(--accent-gold);
-              border-color: rgba(212, 168, 83, 0.3);
-              background: rgba(212, 168, 83, 0.05);
+              .record-dot {
+                background: #ffffff;
+              }
             }
           }
 
@@ -759,7 +749,7 @@
         font-size: 14px;
         line-height: 1.6;
         resize: vertical;
-        min-height: 150px;
+        min-height: 140px;
         box-sizing: border-box;
         transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -818,7 +808,15 @@
       gap: 12px;
       flex-wrap: wrap;
 
-      .footer-left,
+      .footer-left {
+        .critical-warning-text {
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #ef4444;
+          animation: blinkDot 0.8s infinite;
+        }
+      }
+
       .footer-right {
         display: flex;
         align-items: center;
@@ -827,7 +825,7 @@
 
       .nav-control-btn {
         min-height: 38px;
-        padding: 0 16px;
+        padding: 0 18px;
         border-radius: 8px;
         font-family: inherit;
         font-size: 13px;
@@ -838,30 +836,28 @@
         align-items: center;
         justify-content: center;
 
+        /* STRICT DISABLED STATE when input is empty */
         &:disabled {
-          opacity: 0.4;
+          opacity: 0.38;
           cursor: not-allowed;
-        }
+          background: rgba(255, 255, 255, 0.03);
+          border-color: var(--stroke);
+          color: #64748b;
 
-        &.prev-btn {
-          background: transparent;
-          border: 1px solid var(--stroke);
-          color: var(--text-muted);
-
-          &:hover:not(:disabled) {
-            color: #ffffff;
-            border-color: var(--stroke-bright);
-            background: rgba(255, 255, 255, 0.04);
+          &:hover {
+            transform: none;
+            box-shadow: none;
           }
         }
 
         &.skip-btn {
           background: transparent;
-          border: 1px solid transparent;
+          border: 1px solid var(--stroke);
           color: var(--text-muted);
 
           &:hover {
             color: #cbd5e1;
+            border-color: var(--stroke-bright);
             background: rgba(255, 255, 255, 0.04);
           }
         }
@@ -871,7 +867,7 @@
           border: 1px solid var(--stroke-bright);
           color: #ffffff;
 
-          &:hover {
+          &:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.12);
             transform: translateY(-1px);
           }
@@ -882,7 +878,7 @@
           border: 1px solid rgba(212, 168, 83, 0.4);
           color: #07090e;
 
-          &:hover {
+          &:hover:not(:disabled) {
             background: linear-gradient(135deg, #edd092, #d8a74e);
             box-shadow: 0 4px 18px rgba(212, 168, 83, 0.35);
             transform: translateY(-1.5px);
@@ -916,7 +912,6 @@
       max-width: 480px;
       width: 100%;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
-      animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 
       h3 {
         font-size: 19px;
@@ -929,21 +924,11 @@
         font-size: 13.5px;
         line-height: 1.6;
         color: var(--text-muted);
-        margin: 0 0 16px;
+        margin: 0 0 20px;
 
         strong {
           color: #ffffff;
         }
-      }
-
-      .modal-warning {
-        background: rgba(245, 158, 11, 0.1);
-        border: 1px solid rgba(245, 158, 11, 0.3);
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 12.5px;
-        color: #fcd34d;
-        margin-bottom: 20px;
       }
 
       .modal-actions {
@@ -988,6 +973,15 @@
   }
 }
 
+@keyframes criticalPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px rgba(239, 68, 68, 0.4);
+  }
+}
+
 @keyframes pulseRecord {
   0% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
@@ -1009,25 +1003,19 @@
   }
 }
 
-@keyframes modalSlide {
-  from {
-    transform: translateY(14px) scale(0.97);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
 /* ─────────────────────────────────────────────────────────────
-   4. MOCK REPORT VIEW TAB
+   4. PREPARATION REPORT VIEW TAB
 ───────────────────────────────────────────────────────────── */
 .mock-report-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
   animation: fadeIn 0.25s ease-out;
+
+  /* Hidden on screen, visible during PDF/Print export */
+  .print-document-header {
+    display: none;
+  }
 
   .mock-empty-report {
     padding: 20px 0;
@@ -1412,6 +1400,11 @@
         padding: 14px 16px;
         margin-bottom: 14px;
 
+        &.zero-answer {
+          border-color: rgba(239, 68, 68, 0.25);
+          background: rgba(239, 68, 68, 0.04);
+        }
+
         .block-label-row {
           display: flex;
           justify-content: space-between;
@@ -1450,6 +1443,9 @@
           color: var(--accent-gold);
           display: block;
           margin-bottom: 8px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
         }
 
         .feedback-columns {
@@ -1475,6 +1471,11 @@
                 font-size: 12.5px;
                 line-height: 1.45;
                 color: #cbd5e1;
+
+                &.muted-li {
+                  color: #64748b;
+                  font-style: italic;
+                }
               }
             }
 
@@ -1491,14 +1492,36 @@
     }
   }
 
+  /* Dedicated Clean Action Footer at the end */
   .mock-report-footer {
     display: flex;
     justify-content: center;
-    padding-top: 10px;
+    gap: 14px;
+    padding: 16px 0 24px;
+    border-top: 1px solid var(--stroke);
 
-    .retake-btn {
+    .secondary-btn {
       min-height: 42px;
-      padding: 0 24px;
+      padding: 0 20px;
+      background: transparent;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: #ffffff;
+        border-color: var(--stroke-bright);
+        background: rgba(255, 255, 255, 0.04);
+      }
+    }
+
+    .download-pdf-btn {
+      min-height: 42px;
+      padding: 0 26px;
       background: linear-gradient(135deg, #e4be74, #c9983e);
       border: 1px solid rgba(212, 168, 83, 0.4);
       border-radius: 8px;
@@ -1518,7 +1541,263 @@
 }
 
 /* ─────────────────────────────────────────────────────────────
-   5. RESPONSIVE BREAKPOINTS
+   5. PRINT MEDIA & PDF EXPORT STYLES (A4 Document Layout)
+───────────────────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide UI chrome, navigation, buttons and screen dumps */
+  .page-nav,
+  .report-tabs,
+  .report-header,
+  .report-action-buttons,
+  .mock-report-footer,
+  .audio-btn,
+  .session-meta-controls,
+  .nav-btn,
+  .user-chip {
+    display: none !important;
+  }
+
+  .report-page {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    min-height: auto !important;
+  }
+
+  .report-content {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .mock-report-container {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    gap: 16px !important;
+
+    /* Display the formal A4 print header */
+    .print-document-header {
+      display: block !important;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+
+      .doc-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+
+        .brand-badge-print {
+          font-size: 16px;
+          font-weight: 800;
+          background: #0f172a;
+          color: #ffffff;
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+
+        .doc-title-block {
+          h1 {
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0 0 2px;
+            color: #0f172a;
+          }
+
+          p {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0;
+          }
+        }
+      }
+
+      .doc-meta-bar {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8f0;
+
+        .meta-item {
+          font-size: 11px;
+
+          .lbl {
+            color: #64748b;
+            margin-right: 4px;
+          }
+
+          .val {
+            font-weight: 700;
+            color: #0f172a;
+          }
+        }
+      }
+    }
+
+    /* Score Card in Print */
+    .mock-score-card {
+      background: #f8fafc !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+
+      h3 {
+        color: #0f172a !important;
+      }
+
+      p {
+        color: #475569 !important;
+      }
+
+      .score-number .value {
+        color: #0f172a !important;
+      }
+
+      .stat-item .stat-val {
+        color: #0f172a !important;
+      }
+    }
+
+    /* Breakdown Section */
+    .mock-breakdown-section {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+
+      .section-title {
+        color: #0f172a !important;
+      }
+
+      .breakdown-card {
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+
+        .cat-name {
+          color: #0f172a !important;
+        }
+      }
+    }
+
+    /* Strengths & Gaps in Print */
+    .strengths-gaps-grid {
+      page-break-inside: avoid;
+      break-inside: avoid;
+
+      .info-card {
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+
+        .card-header {
+          background: #f1f5f9 !important;
+          border-bottom: 1px solid #cbd5e1 !important;
+
+          h3 {
+            color: #0f172a !important;
+          }
+        }
+
+        .strength-body h4 {
+          color: #0f172a !important;
+        }
+
+        .strength-body p,
+        .gap-desc {
+          color: #475569 !important;
+        }
+
+        .gap-item-block {
+          background: #ffffff !important;
+          border: 1px solid #e2e8f0 !important;
+
+          .gap-skill-name {
+            color: #0f172a !important;
+          }
+        }
+      }
+    }
+
+    /* Detailed Question Cards in Print */
+    .detailed-questions-section {
+      .section-title {
+        color: #0f172a !important;
+      }
+
+      .section-subtitle {
+        color: #64748b !important;
+      }
+
+      .mock-eval-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 14px !important;
+
+        .question-header {
+          background: #f8fafc !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+
+          .cat-tag {
+            color: #64748b !important;
+          }
+        }
+
+        .question-title-area {
+          h3 {
+            color: #0f172a !important;
+          }
+
+          .intention p {
+            color: #475569 !important;
+          }
+        }
+
+        .candidate-answer-block {
+          background: #f8fafc !important;
+          border: 1px solid #cbd5e1 !important;
+
+          .user-response-text {
+            color: #1e293b !important;
+          }
+        }
+
+        .ai-feedback-block {
+          background: #f8fafc !important;
+          border: 1px solid #cbd5e1 !important;
+
+          .feedback-col ul li {
+            color: #334155 !important;
+          }
+        }
+
+        .answer p {
+          color: #1e293b !important;
+        }
+      }
+    }
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. RESPONSIVE BREAKPOINTS
 ───────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .mock-report-container {

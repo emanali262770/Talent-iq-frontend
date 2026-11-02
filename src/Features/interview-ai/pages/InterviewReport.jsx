@@ -258,7 +258,7 @@ const InterviewReport = () => {
             className={`tab-btn ${activeTab === "mock-report" ? "active" : ""}`}
             onClick={() => setActiveTab("mock-report")}
           >
-            Mock Interview Report{mockReport ? ` (${mockReport.overallScore}%)` : ""}
+            Preparation Report{mockReport ? ` (${mockReport.overallScore}%)` : ""}
           </button>
         </div>
 

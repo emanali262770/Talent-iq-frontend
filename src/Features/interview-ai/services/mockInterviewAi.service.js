@@ -379,8 +379,10 @@ export function generateMockQuestions(jobDescription = "", resume = "", selfDesc
 }
 
 /**
- * Intelligent AI Answer Evaluation Engine.
- * Evaluates candidate responses against Job Description requirements and benchmark answers.
+ * Intelligent AI Answer Evaluation Engine with STRICT scoring rules.
+ * Does NOT award dummy or default points.
+ * Evaluates candidate responses against question context and JD requirements.
+ * Irrelevant, empty, or timed-out responses receive 0/minimal score with explicit feedback.
  */
 export function evaluateMockSession({
   questions = [],
@@ -388,87 +390,126 @@ export function evaluateMockSession({
   jobDescription = "",
   elapsedSeconds = 0,
 }) {
-  const answeredCount = Object.keys(answers).filter((qId) => answers[qId]?.trim().length > 10).length;
   const totalQuestions = questions.length || 16;
-
   let totalScoreSum = 0;
   let techScoreSum = 0;
   let techCount = 0;
   let scenarioScoreSum = 0;
   let scenarioCount = 0;
+  let validAnswerCount = 0;
+  let totalWordsAcrossSession = 0;
 
   const jdKeywords = (jobDescription || "")
     .toLowerCase()
     .split(/[\s,.;:()]+/)
-    .filter((w) => w.length > 5);
+    .filter((w) => w.length > 4);
+
+  // Common non-substantive filler phrases
+  const fillerRegex = /^(i don'?t know|idk|skip|pass|no idea|not sure|not applicable|na|n\/a|hello|yes|no|good|fine|ok|okay|\.+|\?+)$/i;
 
   const questionEvaluations = questions.map((q) => {
     const rawAnswer = (answers[q.id] || "").trim();
     const wordCount = rawAnswer ? rawAnswer.split(/\s+/).length : 0;
     const charCount = rawAnswer.length;
+    totalWordsAcrossSession += wordCount;
 
     let score = 0;
     let strengths = [];
     let areasForImprovement = [];
+    let isSubstantive = false;
 
-    if (charCount < 10) {
-      score = 25;
-      strengths.push("Attempted or viewed prompt.");
-      areasForImprovement.push("No substantive response provided. Practice articulating structured technical points or STAR examples.");
-    } else {
-      // Analyze answer depth, keywords, and relevance
-      let baseScore = 60;
-
-      // Word count grading
-      if (wordCount >= 90) baseScore += 20;
-      else if (wordCount >= 50) baseScore += 14;
-      else if (wordCount >= 25) baseScore += 8;
-
-      // Check key evaluation concepts
+    // Strict Case 1: Empty, timed out, or skipped
+    if (charCount === 0) {
+      score = 0;
+      areasForImprovement.push(
+        "No answer provided (timed out or skipped). In a real interview, an unanswered prompt receives 0 marks for this core competency."
+      );
+    }
+    // Strict Case 2: Gibberish, filler or extremely brief non-technical reply
+    else if (charCount < 15 || fillerRegex.test(rawAnswer)) {
+      score = 0;
+      areasForImprovement.push(
+        `Inadequate response: "${rawAnswer}". Failed to demonstrate technical understanding, rationale, or structured problem-solving (0 marks awarded).`
+      );
+    }
+    // Strict Case 3: Substantive evaluation
+    else {
+      isSubstantive = true;
+      validAnswerCount++;
       const lowerAnswer = rawAnswer.toLowerCase();
+
+      // Analyze criteria matches against question's key evaluation points
       let matchedCriteria = 0;
       q.keyEvaluationPoints.forEach((point) => {
         const pointWords = point.toLowerCase().split(/\s+/).filter((w) => w.length > 4);
-        const match = pointWords.some((word) => lowerAnswer.includes(word));
-        if (match) matchedCriteria++;
+        const hasMatch = pointWords.some((word) => lowerAnswer.includes(word));
+        if (hasMatch) matchedCriteria++;
       });
 
-      baseScore += matchedCriteria * 6;
+      // Analyze domain / technical term density
+      const technicalSignals = [
+        "architecture", "trade-off", "performance", "scalability", "memory", "async",
+        "cache", "latency", "security", "bundle", "concurrency", "lifecycle", "refactor",
+        "component", "hook", "state", "database", "index", "query", "pipeline", "ci/cd",
+        "telemetry", "profiling", "rollback", "resilience", "isolation", "incident"
+      ];
+      const matchedTechTerms = technicalSignals.filter((term) => lowerAnswer.includes(term));
 
-      // Scenario specific: check STAR keywords
+      // Analyze scenario STAR framework indicators
+      const starSignals = ["situation", "task", "action", "result", "because", "impact", "metric", "stakeholder", "resolved", "prioritized", "decision"];
+      const matchedStarSignals = starSignals.filter((sig) => lowerAnswer.includes(sig));
+
+      // Analyze JD relevance
+      const matchedJdWords = jdKeywords.filter((w) => lowerAnswer.includes(w));
+
+      // Strict scoring formula starting strictly from ZERO
+      let calculatedScore = 0;
+
+      // 1. Criteria alignment (Up to 45 points)
+      calculatedScore += Math.min(matchedCriteria * 15, 45);
+
+      // 2. Technical term depth & architectural precision (Up to 25 points)
+      calculatedScore += Math.min(matchedTechTerms.length * 6, 25);
+
+      // 3. Scenario STAR structure OR Technical Trade-off clarity (Up to 15 points)
       if (q.type === "scenario") {
-        const starSignals = ["situation", "task", "action", "result", "because", "impact", "metric", "stakeholder", "resolved", "prioritized"];
-        const foundSignals = starSignals.filter((sig) => lowerAnswer.includes(sig));
-        if (foundSignals.length >= 3) baseScore += 6;
-      }
-
-      // Check JD keyword relevance
-      if (jdKeywords.length > 0) {
-        const matchedJdWords = jdKeywords.filter((w) => lowerAnswer.includes(w));
-        if (matchedJdWords.length >= 2) baseScore += 5;
-      }
-
-      score = Math.min(Math.max(baseScore, 35), 98);
-
-      // Strengths & feedback generation
-      if (wordCount >= 60) {
-        strengths.push("Good descriptive depth and structured thought process.");
+        if (matchedStarSignals.length >= 3) calculatedScore += 15;
+        else if (matchedStarSignals.length >= 1) calculatedScore += 8;
       } else {
-        strengths.push("Clear concise baseline answer.");
+        if (lowerAnswer.includes("trade-off") || lowerAnswer.includes("versus") || lowerAnswer.includes("mitigat")) {
+          calculatedScore += 15;
+        } else if (matchedTechTerms.length >= 2) {
+          calculatedScore += 8;
+        }
       }
 
-      if (matchedCriteria > 0) {
-        strengths.push("Successfully addressed core architectural and evaluation criteria.");
-      }
+      // 4. JD Alignment (Up to 10 points)
+      if (matchedJdWords.length >= 3) calculatedScore += 10;
+      else if (matchedJdWords.length >= 1) calculatedScore += 5;
 
-      if (score >= 80) {
-        strengths.push("Demonstrates senior-level grasp of system trade-offs and best practices.");
-        areasForImprovement.push("Can further strengthen answer by quoting specific production metrics or monitoring thresholds.");
-      } else if (score >= 60) {
-        areasForImprovement.push("Expand on specific edge cases, failure recovery, or quantitative impact of your decisions.");
-        areasForImprovement.push("Consider explicitly mentioning trade-offs between speed of delivery and architectural cleanliness.");
+      // 5. Elaboration & completeness (Up to 10 points)
+      if (wordCount >= 60) calculatedScore += 10;
+      else if (wordCount >= 30) calculatedScore += 5;
+
+      // Cap at 98 for realistic benchmark
+      score = Math.min(Math.max(calculatedScore, 5), 98);
+
+      // Feedback generation based on STRICT grading
+      if (score >= 75) {
+        strengths.push("Accurately addressed target criteria with solid technical reasoning.");
+        if (matchedTechTerms.length > 0) {
+          strengths.push(`Effective application of core concepts (${matchedTechTerms.slice(0, 3).join(", ")}).`);
+        }
+        areasForImprovement.push("To reach top percentile, include concrete production metrics (e.g. latency, error rates, throughput).");
+      } else if (score >= 45) {
+        strengths.push("Demonstrated basic conceptual awareness of the topic.");
+        areasForImprovement.push("Answer is somewhat high-level. Deepen technical specifics, failure modes, and architectural trade-offs.");
+        if (q.type === "scenario" && matchedStarSignals.length < 3) {
+          areasForImprovement.push("Apply the STAR method explicitly: state the Situation, Task, your specific Action, and measurable Result.");
+        }
       } else {
-        areasForImprovement.push("Answer lacks technical specifics. Review recommended answer to structure with precise terminology.");
+        areasForImprovement.push("Response lacks technical precision and missed the core criteria evaluated by the interviewer.");
+        areasForImprovement.push("Review the recommended benchmark answer below to adopt precise engineering terminology.");
       }
     }
 
@@ -490,9 +531,10 @@ export function evaluateMockSession({
       difficulty: q.difficulty,
       question: q.question,
       intention: q.intention,
-      candidateAnswer: rawAnswer || "No answer recorded.",
+      candidateAnswer: rawAnswer || "No answer recorded (Timed out or skipped).",
       wordCount,
       score,
+      isSubstantive,
       strengths,
       areasForImprovement,
       idealAnswer: q.idealAnswer,
@@ -500,61 +542,84 @@ export function evaluateMockSession({
   });
 
   const overallScore = Math.round(totalScoreSum / (totalQuestions || 1));
-  const technicalScore = techCount > 0 ? Math.round(techScoreSum / techCount) : overallScore;
-  const scenarioScore = scenarioCount > 0 ? Math.round(scenarioScoreSum / scenarioCount) : overallScore;
-  const communicationScore = Math.min(100, Math.round((overallScore * 0.9) + (answeredCount / totalQuestions) * 15));
+  const technicalScore = techCount > 0 ? Math.round(techScoreSum / techCount) : 0;
+  const scenarioScore = scenarioCount > 0 ? Math.round(scenarioScoreSum / scenarioCount) : 0;
+
+  // Strict accuracy and confidence levels
+  const accuracyScore = Math.round((totalScoreSum / (totalQuestions * 100)) * 100);
+  let confidenceLevel = "High";
+  if (overallScore < 50 || validAnswerCount < Math.ceil(totalQuestions / 2)) {
+    confidenceLevel = "Low / Developing";
+  } else if (overallScore < 75) {
+    confidenceLevel = "Moderate";
+  }
+
+  // Communication score depends on substantive articulate answers
+  const communicationScore = validAnswerCount > 0
+    ? Math.min(100, Math.round((overallScore * 0.7) + (validAnswerCount / totalQuestions) * 30))
+    : 0;
 
   // Determine readiness verdict
   let readinessVerdict = "Strong Candidate";
   let verdictSummary = "Outstanding performance! Your technical breadth and scenario decision-making demonstrate strong senior-level readiness for this role.";
-  if (overallScore < 60) {
-    readinessVerdict = "High Growth Opportunity";
-    verdictSummary = "You have a solid foundation, but several answers need deeper technical specificity and structured STAR methodology. Focus on the identified gaps below.";
-  } else if (overallScore < 78) {
+  if (overallScore < 45) {
+    readinessVerdict = "Needs Intensive Preparation";
+    verdictSummary = "The session revealed significant gaps in technical precision and unanswered prompts. Intensive preparation is required before interviewing for this role.";
+  } else if (overallScore < 65) {
+    readinessVerdict = "Developing Potential";
+    verdictSummary = "Foundational concepts are present, but answers were occasionally incomplete or lacked architectural trade-off analysis. Focus on the identified priority gaps.";
+  } else if (overallScore < 80) {
     readinessVerdict = "Moderate Fit / Promising";
-    verdictSummary = "Good overall grasp of the key responsibilities. Refining your edge-case handling and production telemetry responses will make you a top-tier contender.";
+    verdictSummary = "Good overall grasp of the key responsibilities. Refining edge-case handling and production telemetry responses will make you a top-tier contender.";
   }
 
-  // Key Technical Strengths
-  const technicalStrengths = [
-    {
-      title: "Architectural Separation of Concerns",
-      description: "Demonstrated clear understanding of decoupling presentation components, domain hooks, and API network layers.",
-    },
-    {
-      title: "Real-World Incident Pragmatism",
-      description: "Effective focus on customer stabilization, automated telemetry, and safe rollback over ad-hoc production patching.",
-    },
-    {
-      title: "Performance & Rendering Optimization",
-      description: "Articulated core Web Vitals diagnosis, non-blocking asynchronous execution, and memory leak prevention.",
-    },
-    {
-      title: "Collaborative Engineering Culture",
-      description: "Positive approach to constructive code reviews, empathetic junior mentorship, and business-aligned product trade-offs.",
-    },
-  ];
+  // Key Technical Strengths (Only if demonstrated)
+  const technicalStrengths = [];
+  if (technicalScore >= 60) {
+    technicalStrengths.push({
+      title: "Core Architecture & Design Patterns",
+      description: "Demonstrated clear understanding of decoupling presentation components, domain logic, and API network layers.",
+    });
+  }
+  if (scenarioScore >= 60) {
+    technicalStrengths.push({
+      title: "Production Incident Composure",
+      description: "Effective focus on customer stabilization, telemetry logging, and blameless remediation over ad-hoc patching.",
+    });
+  }
+  if (validAnswerCount >= 12) {
+    technicalStrengths.push({
+      title: "Pacing & Interview Endurance",
+      description: `Successfully responded to ${validAnswerCount} of ${totalQuestions} prompts under strict 30-second countdown conditions.`,
+    });
+  }
+  if (technicalStrengths.length === 0) {
+    technicalStrengths.push({
+      title: "Initiative & Assessment Baseline",
+      description: "Completed the simulated assessment. Use the comprehensive benchmark answers below as study material for targeted role preparation.",
+    });
+  }
 
-  // Areas for Improvement / Skill Gaps
+  // Areas for Improvement / Skill Gaps with dynamic severity based on strict scores
   const areasForImprovement = [
     {
-      skill: "Quantitative Impact & Telemetry Metrics",
-      severity: overallScore >= 80 ? "low" : "medium",
-      suggestion: "Quantify your achievements and architectural decisions with concrete metrics (e.g., '% bundle reduction', 'ms latency savings', 'error rate drops').",
+      skill: "Rapid Technical Articulation (30s Pacing)",
+      severity: validAnswerCount < 10 ? "high" : overallScore < 70 ? "medium" : "low",
+      suggestion: "Practice quickly structuring thoughts using bullet points or leading with the primary trade-off in the first 10 seconds.",
     },
     {
-      skill: "System Design & Distributed Edge Caching",
-      severity: technicalScore >= 75 ? "low" : "high",
+      skill: "System Design & Edge Caching Depth",
+      severity: technicalScore < 60 ? "high" : technicalScore < 75 ? "medium" : "low",
       suggestion: "Deepen explanations of CDN edge caching, stale-while-revalidate invalidations, and database connection limits under high concurrency.",
     },
     {
-      skill: "Defensive Coding & Security Hardening",
+      skill: "Defensive Coding & OWASP Hardening",
       severity: "medium",
       suggestion: "Proactively highlight Content Security Policy (CSP), token storage security (HttpOnly cookies vs localStorage), and automated security scanning.",
     },
     {
       skill: "Structured STAR Storytelling",
-      severity: scenarioScore >= 75 ? "low" : "high",
+      severity: scenarioScore < 65 ? "high" : "medium",
       suggestion: "Ensure every scenario response clearly separates Situation, Task, Action, and the final business/technical Result.",
     },
   ];
@@ -566,11 +631,14 @@ export function evaluateMockSession({
     technicalScore,
     scenarioScore,
     communicationScore,
+    accuracyScore,
+    confidenceLevel,
     readinessVerdict,
     verdictSummary,
-    answeredCount,
+    answeredCount: validAnswerCount,
     totalQuestions,
     elapsedSeconds,
+    totalWordsAcrossSession,
     technicalStrengths,
     areasForImprovement,
     questionEvaluations,
@@ -663,7 +731,8 @@ export function stopSpeaking() {
 }
 
 /**
- * Speech-to-Text Recognition instance helper using Web Speech API.
+ * Speech-to-Text Recognition instance helper using Web Speech API
+ * with STRICT deduplication and final vs interim separation.
  */
 export function createSpeechRecognition({ onResult, onError, onEnd }) {
   if (typeof window === "undefined") return null;
@@ -676,12 +745,30 @@ export function createSpeechRecognition({ onResult, onError, onEnd }) {
   recognition.interimResults = true;
   recognition.lang = "en-US";
 
+  let committedFinal = "";
+
   recognition.onresult = (event) => {
-    let transcript = "";
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      transcript += event.results[i][0].transcript;
+    let interim = "";
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      const res = event.results[i];
+      const text = res[0].transcript;
+      if (res.isFinal) {
+        const cleanPiece = text.trim();
+        // Strict deduplication: prevent repeating the same sentence or phrase
+        if (cleanPiece && !committedFinal.toLowerCase().endsWith(cleanPiece.toLowerCase())) {
+          committedFinal = committedFinal ? `${committedFinal} ${cleanPiece}` : cleanPiece;
+        }
+      } else {
+        interim += text;
+      }
     }
-    if (onResult) onResult(transcript);
+
+    if (onResult) {
+      onResult({
+        finalText: committedFinal,
+        interimText: interim.trim(),
+      });
+    }
   };
 
   if (onError) recognition.onerror = onError;

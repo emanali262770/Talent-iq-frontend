@@ -7,14 +7,14 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
     return (
       <div className="mock-empty-report">
         <div className="empty-report-card">
-          <div className="empty-icon" aria-hidden="true">🎯</div>
-          <h3>No Mock Interview Completed Yet</h3>
+          <div className="empty-icon" aria-hidden="true">📋</div>
+          <h3>No Preparation Report Generated Yet</h3>
           <p>
             Take the AI-powered mock interview to practice 16 targeted questions tailored to your job description.
             Your answers will be evaluated to generate a comprehensive preparation report with personalized feedback and benchmark answers.
           </p>
           <button className="action-btn" onClick={onGoToInterview}>
-            Start Mock Interview Now
+            Start Mock Interview
           </button>
         </div>
       </div>
@@ -26,6 +26,8 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
     technicalScore = 0,
     scenarioScore = 0,
     communicationScore = 0,
+    accuracyScore = 0,
+    confidenceLevel = "Moderate",
     readinessVerdict = "Strong Fit",
     verdictSummary = "",
     answeredCount = 0,
@@ -35,11 +37,12 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
     areasForImprovement = [],
     questionEvaluations = [],
     categoryBreakdown = [],
+    createdAt,
   } = report;
 
   const getScoreColor = (score) => {
-    if (score >= 80) return "#10b981";
-    if (score >= 60) return "#f59e0b";
+    if (score >= 75) return "#10b981";
+    if (score >= 50) return "#f59e0b";
     return "#ef4444";
   };
 
@@ -63,9 +66,50 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
     return `${mins}m ${remainingSecs}s`;
   };
 
+  const formattedDate = new Date(createdAt || Date.now()).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
   return (
     <div className="mock-report-container">
-      {/* 3D Elevated Score Card matching existing layout */}
+      {/* ─────────────────────────────────────────────────────────────
+          PRINTABLE DOCUMENT HEADER (Visible only in PDF / Print Media)
+      ───────────────────────────────────────────────────────────── */}
+      <div className="print-document-header" aria-hidden="true">
+        <div className="doc-brand">
+          <span className="brand-badge-print">TIQ</span>
+          <div className="doc-title-block">
+            <h1>Talent IQ Candidate Preparation Report</h1>
+            <p>Confidential Simulated Interview Assessment & Technical Benchmarking</p>
+          </div>
+        </div>
+        <div className="doc-meta-bar">
+          <div className="meta-item">
+            <span className="lbl">Evaluation Date:</span>
+            <span className="val">{formattedDate}</span>
+          </div>
+          <div className="meta-item">
+            <span className="lbl">Overall Readiness:</span>
+            <span className="val">{overallScore}% ({readinessVerdict})</span>
+          </div>
+          <div className="meta-item">
+            <span className="lbl">Confidence Metric:</span>
+            <span className="val">{confidenceLevel}</span>
+          </div>
+          <div className="meta-item">
+            <span className="lbl">Pacing:</span>
+            <span className="val">30s Countdown / Prompt</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          ON-SCREEN 3D ELEVATED SCORE CARD
+      ───────────────────────────────────────────────────────────── */}
       <div className="score-card mock-score-card">
         <div className="score-circle">
           <svg className="progress-ring" width="120" height="120" viewBox="0 0 120 120">
@@ -101,7 +145,7 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
 
         <div className="score-details">
           <div className="score-heading-row">
-            <h3>Mock Interview Readiness Rating</h3>
+            <h3>Interview Performance & Readiness Assessment</h3>
             <span
               className="score-pill"
               style={{
@@ -118,7 +162,7 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
           <div className="score-stats">
             <div className="stat-item">
               <span className="stat-val">{technicalScore}%</span>
-              <span className="stat-lbl">Technical Concepts</span>
+              <span className="stat-lbl">Technical Depth</span>
             </div>
             <div className="stat-item">
               <span className="stat-val">{scenarioScore}%</span>
@@ -129,18 +173,28 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
               <span className="stat-lbl">Communication</span>
             </div>
             <div className="stat-item">
+              <span className="stat-val">{accuracyScore}%</span>
+              <span className="stat-lbl">Accuracy</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-val">{confidenceLevel}</span>
+              <span className="stat-lbl">Confidence</span>
+            </div>
+            <div className="stat-item">
               <span className="stat-val">{answeredCount}/{totalQuestions}</span>
-              <span className="stat-lbl">Answered</span>
+              <span className="stat-lbl">Substantive Answers</span>
             </div>
             <div className="stat-item">
               <span className="stat-val">{formatDuration(elapsedSeconds)}</span>
-              <span className="stat-lbl">Duration</span>
+              <span className="stat-lbl">Session Time</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Competency Breakdown Grid */}
+      {/* ─────────────────────────────────────────────────────────────
+          COMPETENCY BREAKDOWN GRID
+      ───────────────────────────────────────────────────────────── */}
       <div className="mock-breakdown-section">
         <h3 className="section-title">Competency Evaluation Breakdown</h3>
         <div className="breakdown-grid">
@@ -166,12 +220,14 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
         </div>
       </div>
 
-      {/* Strengths & Priority Improvement Gaps */}
+      {/* ─────────────────────────────────────────────────────────────
+          STRENGTHS & IMPROVEMENT GAPS
+      ───────────────────────────────────────────────────────────── */}
       <div className="strengths-gaps-grid">
         {/* Technical Strengths */}
         <div className="info-card strengths-card">
           <div className="card-header">
-            <h3>🏆 Demonstrated Technical Strengths</h3>
+            <h3>Demonstrated Technical Strengths</h3>
           </div>
           <div className="card-content">
             <div className="strengths-list">
@@ -188,10 +244,10 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
           </div>
         </div>
 
-        {/* Areas for Improvement / Skill Gaps */}
+        {/* Priority Areas for Improvement */}
         <div className="info-card gaps-card">
           <div className="card-header">
-            <h3>🎯 Priority Areas for Improvement</h3>
+            <h3>Priority Areas for Improvement</h3>
           </div>
           <div className="card-content">
             <div className="gaps-list">
@@ -235,29 +291,32 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
         </div>
       </div>
 
-      {/* Detailed Question-by-Question Outcome */}
+      {/* ─────────────────────────────────────────────────────────────
+          DETAILED QUESTION-BY-QUESTION ASSESSMENT
+      ───────────────────────────────────────────────────────────── */}
       <div className="detailed-questions-section">
         <div className="section-header-row">
           <div>
             <h3 className="section-title">Question-by-Question Detailed Assessment</h3>
             <p className="section-subtitle">
-              Review your recorded answers against AI feedback, identified strengths, and recommended benchmark solutions.
+              Strict evaluation of recorded answers against criteria, technical intention, and benchmark models.
             </p>
           </div>
           <div className="report-action-buttons">
             <button
               type="button"
-              className="secondary-btn"
+              className="action-btn download-pdf-btn"
               onClick={() => window.print()}
+              title="Export formatted PDF document"
             >
-              Print / Save PDF
+              Print & Download PDF
             </button>
             <button
               type="button"
-              className="action-btn"
+              className="secondary-btn"
               onClick={onRetakeInterview}
             >
-              Retake Mock Interview
+              Retake Interview
             </button>
           </div>
         </div>
@@ -265,6 +324,8 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
         <div className="questions-tab">
           {questionEvaluations.map((item, index) => {
             const scoreColor = getScoreColor(item.score);
+            const isZero = item.score === 0;
+
             return (
               <div className="question-card mock-eval-card" key={item.id || index}>
                 <div className="question-header">
@@ -282,7 +343,7 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
                         background: `${scoreColor}15`,
                       }}
                     >
-                      Score: {item.score}/100
+                      {isZero ? "Score: 0/100 (Unanswered / Inadequate)" : `Score: ${item.score}/100`}
                     </span>
                   </div>
                 </div>
@@ -290,33 +351,35 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
                 <div className="question-title-area">
                   <h3>{item.question}</h3>
                   <div className="intention">
-                    <span className="label">Interviewer Focus & Intention</span>
+                    <span className="label">Interviewer Intention:</span>
                     <p>{item.intention}</p>
                   </div>
                 </div>
 
                 <div className="question-details">
                   {/* Candidate Answer */}
-                  <div className="candidate-answer-block">
+                  <div className={`candidate-answer-block ${isZero ? "zero-answer" : ""}`}>
                     <div className="block-label-row">
                       <span className="label">Your Submitted Response</span>
                       <span className="answer-stats">{item.wordCount} words</span>
                     </div>
                     <div className="user-response-text">
-                      {item.candidateAnswer || "No answer submitted."}
+                      {item.candidateAnswer}
                     </div>
                   </div>
 
-                  {/* AI Feedback & Key Points */}
+                  {/* AI Feedback */}
                   <div className="ai-feedback-block">
-                    <span className="label feedback-label">AI Evaluator Feedback</span>
+                    <span className="label feedback-label">AI Evaluator Feedback:</span>
                     <div className="feedback-columns">
                       <div className="feedback-col strengths-col">
-                        <h5>Key Strengths:</h5>
+                        <h5>Demonstrated Strengths:</h5>
                         <ul>
-                          {item.strengths.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
+                          {item.strengths.length > 0 ? (
+                            item.strengths.map((s, i) => <li key={i}>{s}</li>)
+                          ) : (
+                            <li className="muted-li">No substantive technical points demonstrated.</li>
+                          )}
                         </ul>
                       </div>
                       <div className="feedback-col gaps-col">
@@ -332,7 +395,7 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
 
                   {/* Recommended Ideal Answer */}
                   <div className="answer">
-                    <span className="label">Recommended Benchmark Answer & Key Takeaway</span>
+                    <span className="label">Recommended Benchmark Answer & Key Takeaway:</span>
                     <p>{item.idealAnswer}</p>
                   </div>
                 </div>
@@ -342,14 +405,24 @@ const MockInterviewReportView = ({ report, onRetakeInterview, onGoToInterview })
         </div>
       </div>
 
-      {/* Bottom Actions */}
+      {/* ─────────────────────────────────────────────────────────────
+          DEDICATED CLEAN ACTION FOOTER AT THE END
+      ───────────────────────────────────────────────────────────── */}
       <div className="mock-report-footer">
         <button
           type="button"
-          className="action-btn retake-btn"
+          className="secondary-btn retake-btn"
           onClick={onRetakeInterview}
         >
-          Practice Again (Retake Interview)
+          Retake Mock Interview
+        </button>
+        <button
+          type="button"
+          className="action-btn download-pdf-btn"
+          onClick={() => window.print()}
+          title="Print or export complete report to A4 PDF document"
+        >
+          Print & Download PDF
         </button>
       </div>
     </div>
