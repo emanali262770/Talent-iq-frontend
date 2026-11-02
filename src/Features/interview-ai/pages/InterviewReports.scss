@@ -1,17 +1,17 @@
 .reports-page {
   --bg: #07090e;
-  --panel: rgba(14, 18, 28, 0.75);
-  --panel-hover: rgba(18, 24, 38, 0.85);
-  --stroke: rgba(255, 255, 255, 0.08);
-  --stroke-bright: rgba(255, 255, 255, 0.18);
+  --panel: rgba(13, 17, 28, 0.88);
+  --panel-hover: rgba(18, 24, 38, 0.94);
+  --stroke: rgba(255, 255, 255, 0.11);
+  --stroke-bright: rgba(255, 255, 255, 0.22);
   --text: #f8fafc;
   --text-muted: #94a3b8;
   --accent-gold: #d4a853;
-  --accent-gold-subtle: rgba(212, 168, 83, 0.1);
+  --accent-gold-subtle: rgba(212, 168, 83, 0.12);
 
   min-height: 100vh;
   background-color: var(--bg);
-  background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 45%);
+  background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.07) 0%, transparent 45%);
   color: var(--text);
   font-family: inherit;
   display: flex;
@@ -222,7 +222,7 @@
   .reports-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 18px;
+    gap: 20px;
     width: 100%;
   }
 
@@ -230,31 +230,35 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 200px;
+    min-height: 210px;
     border: 1px solid var(--stroke);
-    border-radius: 12px;
+    border-radius: 14px;
     background: var(--panel);
     backdrop-filter: blur(20px);
-    padding: 22px;
+    padding: 24px;
     text-align: left;
     color: inherit;
     font-family: inherit;
     cursor: pointer;
     transform: translateZ(0);
-    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background 0.25s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 
     &:hover {
       transform: translateY(-4px) translateZ(0);
-      border-color: rgba(212, 168, 83, 0.35);
+      border-color: rgba(212, 168, 83, 0.45);
       background: var(--panel-hover);
-      box-shadow: 0 18px 42px -6px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(212, 168, 83, 0.08);
+      box-shadow: 0 20px 48px -6px rgba(0, 0, 0, 0.65), 0 0 24px -2px rgba(212, 168, 83, 0.12);
+
+      h3 {
+        color: #ffffff;
+      }
     }
 
     h3 {
-      margin: 12px 0 8px;
-      color: #ffffff;
-      font-size: 15px;
+      margin: 14px 0 8px;
+      color: #f1f5f9;
+      font-size: 15.5px;
       font-weight: 600;
       line-height: 1.45;
       letter-spacing: -0.01em;
@@ -262,11 +266,12 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      transition: color 0.2s ease;
     }
 
     p {
       margin: 0;
-      color: var(--text-muted);
+      color: #94a3b8;
       font-size: 13px;
       line-height: 1.6;
       display: -webkit-box;
@@ -284,18 +289,19 @@
     gap: 10px;
 
     .date {
-      color: var(--text-muted);
+      color: #94a3b8;
       font-size: 12px;
       font-weight: 500;
     }
 
     .score-pill {
       font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
+      font-weight: 700;
+      padding: 3px 9px;
       border-radius: 6px;
       border: 1px solid;
       letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
     }
   }
 
@@ -306,18 +312,19 @@
     flex-wrap: wrap;
 
     span {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 500;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 6px;
       border: 1px solid var(--stroke);
-      color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.03);
-      transition: border-color 0.2s ease, background 0.2s ease;
+      color: #cbd5e1;
+      background: rgba(255, 255, 255, 0.035);
+      transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 
       &:hover {
         border-color: var(--stroke-bright);
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
       }
     }
   }
