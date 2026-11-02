@@ -387,7 +387,40 @@
         font-weight: 600;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       }
+
+      &.locked {
+        opacity: 0.42;
+        cursor: not-allowed;
+
+        &:hover {
+          color: var(--text-muted);
+          background: transparent;
+          transform: none;
+        }
+
+        .tab-lock-icon {
+          display: inline-block;
+          font-size: 11px;
+          margin-left: 5px;
+          opacity: 0.8;
+        }
+      }
     }
+  }
+
+  .tab-locked-toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    color: #fca5a5;
+    font-size: 13px;
+    font-weight: 500;
+    animation: fadeIn 0.22s ease-out;
   }
 
   /* ─────────────────────────────────────────────────────────────

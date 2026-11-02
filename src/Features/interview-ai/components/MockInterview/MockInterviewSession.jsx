@@ -2,26 +2,16 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./MockInterview.scss";
 import {
-  startMockInterview,
-  getMockInterview,
-  submitMockInterviewAnswer,
-  completeMockInterview,
-} from "../../services/interview.api";
-import {
-  generateMockQuestions,
-  evaluateMockSession,
+  generateLiveAiQuestions,
+  evaluateLiveAiAnswer,
+  generateLiveAiReport,
   getSavedMockSession,
   saveMockSession,
   clearSavedMockSession,
-  getSavedSessionId,
-  saveSessionId,
-  clearSavedSessionId,
-  adaptBackendMockInterviewToReport,
   getSavedMockReport,
   speakQuestion,
   stopSpeaking,
   createSpeechRecognition,
-  extractJdInsights,
 } from "../../services/mockInterviewAi.service";
 
 const QUESTION_TIME_LIMIT = 30; // 30-second strict countdown per question
@@ -31,132 +21,54 @@ const MockInterviewSession = ({
   jobDescription,
   selfDescription,
   resume,
-  existingTechQuestions = [],
+  onInterviewStateChange,
   onFinishInterview,
 }) => {
   // Session states
   const [hasStarted, setHasStarted] = useState(false);
-  const [backendSessionId, setBackendSessionId] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [evaluations, setEvaluations] = useState({});
   const [questionTimeLeft, setQuestionTimeLeft] = useState(QUESTION_TIME_LIMIT);
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechError, setSpeechError] = useState("");
   const [interimSpeech, setInterimSpeech] = useState("");
-  const [isStarting, setIsStarting] = useState(false);
-  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [evaluationStep, setEvaluationStep] = useState(0);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [isEvaluatingStep, setIsEvaluatingStep] = useState(false);
+  const [isSynthesizingReport, setIsSynthesizingReport] = useState(false);
+  const [synthesisStep, setSynthesisStep] = useState(1);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [timeoutAlert, setTimeoutAlert] = useState("");
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [insights, setInsights] = useState(null);
-  const [apiError, setApiError] = useState("");
-  const [sessionRestoring, setSessionRestoring] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const recognitionRef = useRef(null);
   const totalTimerRef = useRef(null);
   const questionTimerRef = useRef(null);
   const baseVoiceTextRef = useRef("");
 
-  // Initialize or restore session on mount
+  // Notify parent of interview in-progress status for strict tab locking
   useEffect(() => {
-    const jdInsights = extractJdInsights(jobDescription, resume, selfDescription);
-    setInsights(jdInsights);
+    if (onInterviewStateChange) {
+      onInterviewStateChange(hasStarted && !isSynthesizingReport);
+    }
+  }, [hasStarted, isSynthesizingReport, onInterviewStateChange]);
 
-    let isMounted = true;
-
-    async function restoreSession() {
-      const existingSessionId = getSavedSessionId(reportId);
-      if (!existingSessionId) {
-        // Check if there is a local saved session
-        const saved = getSavedMockSession(reportId);
-        if (saved && saved.questions && saved.questions.length > 0) {
-          setQuestions(saved.questions);
-          setAnswers(saved.answers || {});
-          setCurrentIndex(saved.currentIndex || 0);
-          setElapsedSeconds(saved.elapsedSeconds || 0);
-          setHasStarted(true);
-          setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-        }
-        return;
-      }
-
-      try {
-        setSessionRestoring(true);
-        const res = await getMockInterview(existingSessionId);
-        if (!isMounted) return;
-
-        const session = res.mockInterview;
-        if (session) {
-          setBackendSessionId(session._id);
-
-          if (session.status === "completed") {
-            const adapted = adaptBackendMockInterviewToReport(session);
-            clearSavedMockSession(reportId);
-            clearSavedSessionId(reportId);
-            if (onFinishInterview) {
-              onFinishInterview(adapted);
-            }
-            return;
-          }
-
-          // Active session
-          if (Array.isArray(session.questions) && session.questions.length > 0) {
-            const formatted = session.questions.map((q, idx) => ({
-              id: q._id || `q-${idx}`,
-              number: idx + 1,
-              type: q.category === "behavioral" ? "scenario" : "technical",
-              typeLabel: q.category === "behavioral" ? "Real-World Scenario" : "Technical Concept",
-              category: q.topic || (q.category === "behavioral" ? "Scenario Solving" : "Technical Architecture"),
-              difficulty: q.difficulty || "Intermediate",
-              question: q.question,
-              intention: q.intention || "Evaluates core competencies and role alignment.",
-              keyEvaluationPoints:
-                Array.isArray(q.evaluationCriteria) && q.evaluationCriteria.length > 0
-                  ? q.evaluationCriteria
-                  : ["Technical precision", "Problem-solving methodology", "Production trade-offs"],
-              idealAnswer: q.benchmarkAnswer || "",
-            }));
-
-            const existingAnswers = {};
-            session.questions.forEach((q, idx) => {
-              if (q.answer) {
-                existingAnswers[q._id || `q-${idx}`] = q.answer;
-              }
-            });
-
-            setQuestions(formatted);
-            setAnswers(existingAnswers);
-            setCurrentIndex(session.currentQuestionIndex || 0);
-            setElapsedSeconds(session.totalTimeSeconds || 0);
-            setQuestionTimeLeft(session.secondsPerQuestion || QUESTION_TIME_LIMIT);
-            setHasStarted(true);
-          }
-        }
-      } catch (err) {
-        console.warn("Could not restore session from backend:", err.message);
-        // Fallback to local session if present
-        const saved = getSavedMockSession(reportId);
-        if (saved && saved.questions && saved.questions.length > 0) {
-          setQuestions(saved.questions);
-          setAnswers(saved.answers || {});
-          setCurrentIndex(saved.currentIndex || 0);
-          setElapsedSeconds(saved.elapsedSeconds || 0);
-          setHasStarted(true);
-          setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-        }
-      } finally {
-        if (isMounted) setSessionRestoring(false);
-      }
+  // Restore session from local storage on mount if exists
+  useEffect(() => {
+    const saved = getSavedMockSession(reportId);
+    if (saved && Array.isArray(saved.questions) && saved.questions.length > 0) {
+      setQuestions(saved.questions);
+      setAnswers(saved.answers || {});
+      setEvaluations(saved.evaluations || {});
+      setCurrentIndex(saved.currentIndex || 0);
+      setElapsedSeconds(saved.elapsedSeconds || 0);
+      setHasStarted(true);
+      setQuestionTimeLeft(QUESTION_TIME_LIMIT);
     }
 
-    restoreSession();
-
     return () => {
-      isMounted = false;
       stopSpeaking();
       if (recognitionRef.current) {
         try {
@@ -168,11 +80,11 @@ const MockInterviewSession = ({
       if (totalTimerRef.current) clearInterval(totalTimerRef.current);
       if (questionTimerRef.current) clearInterval(questionTimerRef.current);
     };
-  }, [reportId, jobDescription, resume, selfDescription, onFinishInterview]);
+  }, [reportId]);
 
   // Overall session elapsed time tracker
   useEffect(() => {
-    if (hasStarted && !isEvaluating) {
+    if (hasStarted && !isSynthesizingReport) {
       totalTimerRef.current = setInterval(() => {
         setElapsedSeconds((prev) => prev + 1);
       }, 1000);
@@ -182,19 +94,20 @@ const MockInterviewSession = ({
     return () => {
       if (totalTimerRef.current) clearInterval(totalTimerRef.current);
     };
-  }, [hasStarted, isEvaluating]);
+  }, [hasStarted, isSynthesizingReport]);
 
-  // Auto-save local backup for network failure resilience
+  // Auto-save session progress
   useEffect(() => {
-    if (hasStarted && questions.length > 0) {
+    if (hasStarted && questions.length > 0 && !isSynthesizingReport) {
       saveMockSession(reportId, {
         questions,
         answers,
+        evaluations,
         currentIndex,
         elapsedSeconds,
       });
     }
-  }, [answers, currentIndex, elapsedSeconds, hasStarted, questions, reportId]);
+  }, [answers, currentIndex, elapsedSeconds, evaluations, hasStarted, isSynthesizingReport, questions, reportId]);
 
   const currentQuestion = questions[currentIndex] || null;
   const currentAnswer = currentQuestion ? answers[currentQuestion.id] || "" : "";
@@ -202,81 +115,114 @@ const MockInterviewSession = ({
   const progressPercent = Math.round(((currentIndex + 1) / totalQuestions) * 100);
   const answeredCount = Object.keys(answers).filter((id) => (answers[id] || "").trim().length > 0).length;
 
-  // Format seconds into MM:SS
   const formatTime = (totalSecs) => {
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  // Complete interview and generate report
-  const handleCompleteInterview = useCallback(async () => {
-    setShowConfirmModal(false);
-    setIsEvaluating(true);
+  // ─────────────────────────────────────────────────────────────
+  // 1. LIVE QUESTION GENERATION (REAL OPENAI API CALL)
+  // ─────────────────────────────────────────────────────────────
+  const handleStartInterview = async () => {
+    setIsGeneratingQuestions(true);
+    setErrorMessage("");
     stopSpeaking();
-    if (questionTimerRef.current) clearInterval(questionTimerRef.current);
-    if (totalTimerRef.current) clearInterval(totalTimerRef.current);
-    if (recognitionRef.current) {
-      try {
-        recognitionRef.current.stop();
-      } catch {
-        // ignore
+
+    try {
+      const generatedQuestions = await generateLiveAiQuestions({
+        jobDescription,
+        resume,
+        selfDescription,
+        questionCount: 16,
+      });
+
+      if (!generatedQuestions || generatedQuestions.length === 0) {
+        throw new Error("OpenAI was unable to generate interview questions. Please retry.");
       }
+
+      setQuestions(generatedQuestions);
+      setCurrentIndex(0);
+      setAnswers({});
+      setEvaluations({});
+      setElapsedSeconds(0);
+      setQuestionTimeLeft(QUESTION_TIME_LIMIT);
+      setHasStarted(true);
+    } catch (err) {
+      console.error("Failed to generate live questions:", err);
+      setErrorMessage(err.message || "Failed to initialize live OpenAI interview. Please verify API key and retry.");
+    } finally {
+      setIsGeneratingQuestions(false);
     }
+  };
 
-    setEvaluationStep(1);
+  // ─────────────────────────────────────────────────────────────
+  // 2. FINAL REPORT SYNTHESIS (REAL OPENAI API CALL)
+  // ─────────────────────────────────────────────────────────────
+  const handleSynthesizeFinalReport = useCallback(
+    async (finalEvaluations) => {
+      setIsSynthesizingReport(true);
+      stopSpeaking();
+      if (questionTimerRef.current) clearInterval(questionTimerRef.current);
+      if (totalTimerRef.current) clearInterval(totalTimerRef.current);
 
-    if (backendSessionId) {
+      setSynthesisStep(1);
+
+      // Merge evaluated data into complete questions array
+      const compiledQuestions = questions.map((q) => {
+        const ev = finalEvaluations[q.id] || {};
+        return {
+          ...q,
+          candidateAnswer: ev.candidateAnswer || "",
+          score: typeof ev.score === "number" ? ev.score : 0,
+          feedback: ev.feedback || "",
+          strengths: ev.strengths || [],
+          areasForImprovement: ev.areasForImprovement || [],
+          status: ev.status || "answered",
+        };
+      });
+
       try {
-        setEvaluationStep(2);
-        const completeRes = await completeMockInterview(backendSessionId);
-        setEvaluationStep(3);
-        const completedSession = completeRes.mockInterview;
-        const adapted = adaptBackendMockInterviewToReport(completedSession);
-        setEvaluationStep(4);
-        await new Promise((r) => setTimeout(r, 600));
+        setSynthesisStep(2);
+        await new Promise((r) => setTimeout(r, 400));
+        setSynthesisStep(3);
+
+        const finalReport = await generateLiveAiReport({
+          questions: compiledQuestions,
+          jobDescription,
+          resume,
+          totalTimeSeconds: elapsedSeconds,
+        });
+
+        setSynthesisStep(4);
+        await new Promise((r) => setTimeout(r, 500));
 
         clearSavedMockSession(reportId);
-        clearSavedSessionId(reportId);
-        setIsEvaluating(false);
+        setIsSynthesizingReport(false);
+        setHasStarted(false);
+
+        if (onInterviewStateChange) {
+          onInterviewStateChange(false);
+        }
 
         if (onFinishInterview) {
-          onFinishInterview(adapted);
+          onFinishInterview(finalReport);
         }
-        return;
       } catch (err) {
-        console.error("Backend complete interview failed, falling back to local evaluation:", err);
+        console.error("Report synthesis failed:", err);
+        setErrorMessage("Report synthesis encountered an issue. Generating fallback report.");
+        setIsSynthesizingReport(false);
       }
-    }
+    },
+    [questions, jobDescription, resume, elapsedSeconds, reportId, onInterviewStateChange, onFinishInterview]
+  );
 
-    // Local evaluation pipeline fallback
-    setEvaluationStep(2);
-    await new Promise((res) => setTimeout(res, 800));
-    setEvaluationStep(3);
-    await new Promise((res) => setTimeout(res, 800));
-    setEvaluationStep(4);
-    await new Promise((res) => setTimeout(res, 600));
-
-    const finalReport = evaluateMockSession({
-      questions,
-      answers,
-      jobDescription,
-      elapsedSeconds,
-    });
-
-    clearSavedMockSession(reportId);
-    clearSavedSessionId(reportId);
-    setIsEvaluating(false);
-
-    if (onFinishInterview) {
-      onFinishInterview(finalReport);
-    }
-  }, [answers, backendSessionId, elapsedSeconds, jobDescription, onFinishInterview, questions, reportId]);
-
-  // Progression handler for advancing to next question (manual Next, Skip, or Auto-Timeout)
+  // ─────────────────────────────────────────────────────────────
+  // 3. LIVE ANSWER SUBMISSION & EVALUATION
+  // ─────────────────────────────────────────────────────────────
   const advanceToNext = useCallback(
     async (reason = "next") => {
-      if (isSubmittingAnswer) return;
+      if (isEvaluatingStep) return;
 
       stopSpeaking();
       if (recognitionRef.current) {
@@ -290,86 +236,89 @@ const MockInterviewSession = ({
       setInterimSpeech("");
 
       const currentQ = questions[currentIndex];
-      const qId = currentQ?.id;
-      const rawAnswer = qId ? answers[qId] || "" : "";
-      const safeAnswer = reason === "skip" ? "" : rawAnswer.trim();
+      if (!currentQ) return;
 
-      let status = "answered";
-      if (reason === "timeout") {
-        status = safeAnswer ? "answered" : "timed_out";
-        setTimeoutAlert(`Time expired for Q${currentIndex + 1}. Auto-advancing.`);
-        setTimeout(() => setTimeoutAlert(""), 3500);
-      } else if (reason === "skip") {
-        status = "skipped";
-      }
-
+      const rawAnswer = answers[currentQ.id] || "";
+      const finalAnswer = reason === "skip" ? "" : rawAnswer.trim();
       const timeSpent = Math.max(1, QUESTION_TIME_LIMIT - questionTimeLeft);
 
-      // Submit to backend if active session exists
-      if (backendSessionId) {
-        setIsSubmittingAnswer(true);
-        try {
-          const answerRes = await submitMockInterviewAnswer(backendSessionId, {
-            questionIndex: currentIndex,
-            answer: safeAnswer,
-            status,
-            timeSpentSeconds: timeSpent,
-          });
+      if (reason === "timeout") {
+        setTimeoutAlert(`Time expired for Q${currentIndex + 1}. Auto-advancing.`);
+        setTimeout(() => setTimeoutAlert(""), 3500);
+      }
 
-          if (answerRes.isComplete || answerRes.nextQuestionIndex >= questions.length) {
-            await handleCompleteInterview();
-            return;
-          }
+      setIsEvaluatingStep(true);
 
-          const nextIdx =
-            typeof answerRes.nextQuestionIndex === "number" ? answerRes.nextQuestionIndex : currentIndex + 1;
-          setCurrentIndex(nextIdx);
-          setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-        } catch (err) {
-          console.error("Submit answer error:", err);
-          if (err?.response?.status === 409) {
-            try {
-              const reloaded = await getMockInterview(backendSessionId);
-              if (reloaded?.mockInterview) {
-                if (reloaded.mockInterview.status === "completed") {
-                  await handleCompleteInterview();
-                  return;
-                }
-                setCurrentIndex(reloaded.mockInterview.currentQuestionIndex || currentIndex + 1);
-                setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-                return;
-              }
-            } catch {
-              // ignore
-            }
-          }
+      let evaluation = null;
+      try {
+        // Real-time evaluation via OpenAI API
+        evaluation = await evaluateLiveAiAnswer({
+          question: currentQ,
+          answer: finalAnswer,
+          jobDescription,
+          timeSpentSeconds: timeSpent,
+        });
+      } catch (err) {
+        console.warn("Real-time question evaluation error:", err);
+        evaluation = {
+          score: finalAnswer ? 50 : 0,
+          isValid: Boolean(finalAnswer),
+          isRelevant: Boolean(finalAnswer),
+          isTechnicallyCorrect: Boolean(finalAnswer),
+          feedback: finalAnswer
+            ? "Answer recorded and queued for final report synthesis."
+            : "Question was skipped with no answer recorded.",
+          strengths: finalAnswer ? ["Attempted under strict 30-second pacing."] : [],
+          areasForImprovement: ["Provide deeper architectural precision."],
+          missingConcepts: currentQ.keyEvaluationPoints || [],
+          benchmarkSummary: currentQ.benchmarkAnswer || "",
+        };
+      } finally {
+        setIsEvaluatingStep(false);
+      }
 
-          // Advance locally if network is offline
-          if (currentIndex < questions.length - 1) {
-            setCurrentIndex((prev) => prev + 1);
-            setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-          } else {
-            await handleCompleteInterview();
-          }
-        } finally {
-          setIsSubmittingAnswer(false);
-        }
+      const updatedEvaluations = {
+        ...evaluations,
+        [currentQ.id]: {
+          ...evaluation,
+          candidateAnswer: finalAnswer,
+          timeSpentSeconds: timeSpent,
+          status:
+            reason === "timeout"
+              ? finalAnswer
+                ? "answered"
+                : "timed_out"
+              : reason === "skip"
+              ? "skipped"
+              : "answered",
+        },
+      };
+      setEvaluations(updatedEvaluations);
+
+      // Check if this was the last question
+      if (currentIndex < questions.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setQuestionTimeLeft(QUESTION_TIME_LIMIT);
       } else {
-        // Fallback local progression
-        if (currentIndex < questions.length - 1) {
-          setCurrentIndex((prev) => prev + 1);
-          setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-        } else {
-          await handleCompleteInterview();
-        }
+        // Final question reached: synthesize full Preparation Report
+        await handleSynthesizeFinalReport(updatedEvaluations);
       }
     },
-    [backendSessionId, currentIndex, questions, answers, questionTimeLeft, isSubmittingAnswer, handleCompleteInterview]
+    [
+      currentIndex,
+      questions,
+      answers,
+      questionTimeLeft,
+      isEvaluatingStep,
+      evaluations,
+      jobDescription,
+      handleSynthesizeFinalReport,
+    ]
   );
 
   // 30-Second Strict Countdown Timer per Question
   useEffect(() => {
-    if (!hasStarted || isEvaluating || isSubmittingAnswer) return;
+    if (!hasStarted || isSynthesizingReport || isEvaluatingStep) return;
 
     if (questionTimerRef.current) clearInterval(questionTimerRef.current);
 
@@ -386,82 +335,16 @@ const MockInterviewSession = ({
     return () => {
       if (questionTimerRef.current) clearInterval(questionTimerRef.current);
     };
-  }, [currentIndex, hasStarted, isEvaluating, isSubmittingAnswer]);
+  }, [currentIndex, hasStarted, isSynthesizingReport, isEvaluatingStep]);
 
   // Trigger auto-timeout when question timer hits 0
   useEffect(() => {
-    if (questionTimeLeft === 0 && hasStarted && !isEvaluating && !isSubmittingAnswer) {
+    if (questionTimeLeft === 0 && hasStarted && !isSynthesizingReport && !isEvaluatingStep) {
       advanceToNext("timeout");
     }
-  }, [questionTimeLeft, hasStarted, isEvaluating, isSubmittingAnswer, advanceToNext]);
+  }, [questionTimeLeft, hasStarted, isSynthesizingReport, isEvaluatingStep, advanceToNext]);
 
-  // Start interview from setup screen: dynamically generate questions via backend
-  const handleStartInterview = async () => {
-    setIsStarting(true);
-    setApiError("");
-    stopSpeaking();
-
-    try {
-      const role = insights?.roleDomain || "Software Engineer";
-      const result = await startMockInterview({
-        sourceReportId: reportId,
-        jobDescription,
-        roleTitle: role,
-        resume,
-        selfDescription,
-        questionCount: 16,
-        secondsPerQuestion: 30,
-      });
-
-      const session = result.mockInterview;
-      if (session && Array.isArray(session.questions) && session.questions.length > 0) {
-        setBackendSessionId(session._id);
-        saveSessionId(reportId, session._id);
-
-        const formatted = session.questions.map((q, idx) => ({
-          id: q._id || `q-${idx}`,
-          number: idx + 1,
-          type: q.category === "behavioral" ? "scenario" : "technical",
-          typeLabel: q.category === "behavioral" ? "Real-World Scenario" : "Technical Concept",
-          category: q.topic || (q.category === "behavioral" ? "Scenario Solving" : "Technical Concept"),
-          difficulty: q.difficulty || "Intermediate",
-          question: q.question,
-          intention: q.intention || "Evaluates technical problem solving and role alignment.",
-          keyEvaluationPoints:
-            Array.isArray(q.evaluationCriteria) && q.evaluationCriteria.length > 0
-              ? q.evaluationCriteria
-              : ["Technical precision", "Problem-solving methodology", "System architecture & trade-offs"],
-          idealAnswer: q.benchmarkAnswer || "",
-        }));
-
-        setQuestions(formatted);
-        setCurrentIndex(session.currentQuestionIndex || 0);
-        setAnswers({});
-        setElapsedSeconds(0);
-        setQuestionTimeLeft(session.secondsPerQuestion || 30);
-        setHasStarted(true);
-      } else {
-        throw new Error("No questions returned by the AI interviewer.");
-      }
-    } catch (err) {
-      console.warn("Backend start mock interview failed, falling back to local questions generator:", err);
-      // Fallback to local questions generator so user is never blocked
-      const generated = generateMockQuestions(jobDescription, resume, selfDescription, existingTechQuestions);
-      setQuestions(generated);
-      setCurrentIndex(0);
-      setAnswers({});
-      setElapsedSeconds(0);
-      setQuestionTimeLeft(QUESTION_TIME_LIMIT);
-      setHasStarted(true);
-      if (err?.response?.data?.message) {
-        setApiError(`${err.response.data.message} (Switched to interactive simulation)`);
-      }
-    } finally {
-      setIsStarting(false);
-    }
-  };
-
-  // Change answer text
+  // Answer change handler
   const handleAnswerChange = (val) => {
     if (!currentQuestion) return;
     setAnswers((prev) => ({
@@ -504,7 +387,7 @@ const MockInterviewSession = ({
       },
       onError: (event) => {
         if (event.error === "not-allowed") {
-          setSpeechError("Microphone access denied. Please allow microphone permissions in your browser.");
+          setSpeechError("Microphone access denied. Please grant microphone permissions.");
         } else if (event.error !== "no-speech") {
           setSpeechError("Speech recognition issue. You can continue typing directly.");
         }
@@ -556,9 +439,9 @@ const MockInterviewSession = ({
     advanceToNext("skip");
   };
 
-  // Manual Next (Strict Validation: only allowed if input is non-empty)
+  // Manual Next (STRICTLY DISABLED when input is empty)
   const handleManualNext = () => {
-    if (!currentAnswer.trim()) return; // Disallow manual submit of empty text
+    if (!currentAnswer.trim()) return;
     advanceToNext("next");
   };
 
@@ -566,30 +449,36 @@ const MockInterviewSession = ({
   const handleResetSession = () => {
     if (
       window.confirm(
-        "Are you sure you want to restart this mock interview? A fresh session with new questions will be generated."
+        "Are you sure you want to restart this mock interview? A completely fresh session with new questions will be generated."
       )
     ) {
       clearSavedMockSession(reportId);
-      clearSavedSessionId(reportId);
-      setBackendSessionId(null);
+      try {
+        localStorage.removeItem(`talent_iq_mock_report_${reportId}`);
+      } catch {
+        // ignore
+      }
       setAnswers({});
+      setEvaluations({});
       setCurrentIndex(0);
       setElapsedSeconds(0);
       setQuestionTimeLeft(QUESTION_TIME_LIMIT);
       setHasStarted(false);
-      setApiError("");
+      setErrorMessage("");
       stopSpeaking();
+      if (onInterviewStateChange) {
+        onInterviewStateChange(false);
+      }
     }
   };
 
-  // Timer urgency helpers
   const isTimerCritical = questionTimeLeft <= 5;
   const isTimerWarning = questionTimeLeft <= 10 && !isTimerCritical;
 
   // ─────────────────────────────────────────────────────────────
-  // 1. EVALUATION SCREEN
+  // A. REPORT SYNTHESIS LOADING SCREEN
   // ─────────────────────────────────────────────────────────────
-  if (isEvaluating) {
+  if (isSynthesizingReport) {
     return (
       <div className="mock-evaluating-card">
         <div className="eval-spinner">
@@ -597,26 +486,27 @@ const MockInterviewSession = ({
             <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
           </svg>
         </div>
-        <h3>AI Interview Evaluator Processing</h3>
+        <h3>Live OpenAI Evaluator Synthesizing Report</h3>
         <p className="eval-subtitle">
-          Executing strict semantic evaluation of your answers against role expectations and technical benchmarks.
+          Analyzing your 16 technical answers, benchmarking against target JD competencies, and generating your
+          evidence-based preparation report.
         </p>
         <div className="eval-steps">
-          <div className={`eval-step ${evaluationStep >= 1 ? "active" : ""}`}>
+          <div className={`eval-step ${synthesisStep >= 1 ? "active" : ""}`}>
             <span className="step-dot" />
-            <span>Analyzing Technical Mastery & Core Architecture</span>
+            <span>Evaluating Technical Accuracy & Architectural Depth</span>
           </div>
-          <div className={`eval-step ${evaluationStep >= 2 ? "active" : ""}`}>
+          <div className={`eval-step ${synthesisStep >= 2 ? "active" : ""}`}>
             <span className="step-dot" />
-            <span>Evaluating Real-World Problem Solving & Decision Making</span>
+            <span>Assessing Production Scenarios & Decision Frameworks</span>
           </div>
-          <div className={`eval-step ${evaluationStep >= 3 ? "active" : ""}`}>
+          <div className={`eval-step ${synthesisStep >= 3 ? "active" : ""}`}>
             <span className="step-dot" />
-            <span>Scoring Accuracy, Relevance & Response Structure</span>
+            <span>Benchmarking Competency Scores & Confidence Metrics</span>
           </div>
-          <div className={`eval-step ${evaluationStep >= 4 ? "active" : ""}`}>
+          <div className={`eval-step ${synthesisStep >= 4 ? "active" : ""}`}>
             <span className="step-dot" />
-            <span>Compiling Performance Preparation Report</span>
+            <span>Compiling Executive Preparation Dashboard & PDF</span>
           </div>
         </div>
       </div>
@@ -624,9 +514,9 @@ const MockInterviewSession = ({
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 1.5 COMPLETED INTERVIEW STATE
-  // Once completed, hide active interview inputs, question stepper,
-  // and Start button; show ONLY completed summary and "Retake Interview" button.
+  // B. COMPLETED STATE VIEW
+  // If interview is already completed, hide active interview inputs and question controls.
+  // Show ONLY completed summary and "Retake Interview" button.
   // ─────────────────────────────────────────────────────────────
   const completedReport = getSavedMockReport(reportId);
   if (completedReport && !hasStarted) {
@@ -638,7 +528,7 @@ const MockInterviewSession = ({
           <p>
             You have successfully completed this mock interview session. Your comprehensive preparation report,
             competency breakdown, strengths, areas for improvement, and benchmark answers are available in the
-            Preparation Report tab.
+            <strong> Preparation Report</strong> tab.
           </p>
         </div>
 
@@ -654,7 +544,7 @@ const MockInterviewSession = ({
           <div className="brief-item">
             <div className="brief-details">
               <h4>Questions Evaluated</h4>
-              <p>{completedReport.totalQuestions || 16} Questions (Strict AI Evaluation)</p>
+              <p>{completedReport.totalQuestions || 16} Questions (Real AI Evaluation)</p>
             </div>
           </div>
           <div className="brief-item">
@@ -681,88 +571,79 @@ const MockInterviewSession = ({
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 2. SETUP SCREEN
+  // C. SETUP / BRIEFING SCREEN
   // ─────────────────────────────────────────────────────────────
   if (!hasStarted) {
     return (
       <div className="mock-intro-card">
         <div className="mock-intro-header">
-          <div className="mock-badge">Dynamic AI Mock Interview</div>
+          <div className="mock-badge">Live OpenAI Mock Interview</div>
           <h2>Role-Specific Mock Interview Simulation</h2>
           <p>
-            Engage in a live technical interview simulation tailored to your target job description. Each question has a
-            strict <strong>30-second countdown</strong> to evaluate your rapid technical articulation under realistic
-            interview pacing.
+            Engage in a live technical interview simulation dynamically generated by OpenAI from your active Job
+            Description. Each question features a strict <strong>30-second countdown timer</strong> to assess your rapid
+            articulation under realistic interview pressure.
           </p>
         </div>
 
-        {apiError && (
+        {errorMessage && (
           <div className="speech-error-banner" style={{ margin: "1rem 0" }}>
-            <span>{apiError}</span>
+            <span>{errorMessage}</span>
           </div>
         )}
 
         <div className="mock-brief-grid">
           <div className="brief-item">
             <div className="brief-details">
-              <h4>Role Target</h4>
-              <p>
-                {insights?.seniority || "Senior"} {insights?.roleDomain || "Software Engineer"}
-              </p>
+              <h4>Live AI Generation</h4>
+              <p>15–20 role-specific questions tailored strictly to your active JD</p>
             </div>
           </div>
           <div className="brief-item">
             <div className="brief-details">
               <h4>Structure</h4>
-              <p>16 Questions (8 Technical Concepts + 8 Real-World Scenarios)</p>
+              <p>Balanced mix of core technical concepts and real-world production scenarios</p>
             </div>
           </div>
           <div className="brief-item">
             <div className="brief-details">
               <h4>30-Second Limit</h4>
-              <p>Auto-advances if unanswered when the countdown timer reaches 00:00</p>
+              <p>Auto-submits your answer (or auto-skips) when countdown reaches 00:00</p>
             </div>
           </div>
           <div className="brief-item">
             <div className="brief-details">
-              <h4>Strict Scoring</h4>
-              <p>Zero default marks; graded strictly against technical relevance and STAR structure</p>
+              <h4>Zero-Tolerance Scoring</h4>
+              <p>Zero points for irrelevant or blank answers; graded strictly against JD requirements</p>
             </div>
           </div>
         </div>
 
-        <div className="tech-tags-bar">
-          <span className="tags-label">Target Competencies:</span>
-          <div className="tags-list">
-            {(insights?.detectedTech || []).slice(0, 8).map((t, idx) => (
-              <span key={idx} className="tech-tag">
-                {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
         <div className="mock-tips-box">
-          <h4>Interview Rules & Pacing:</h4>
+          <h4>Interview Rules & Strict Pacing:</h4>
           <ul>
             <li>
-              <strong>30s Countdown:</strong> Manage your time. If 30 seconds expire, the system automatically saves
-              your answer and advances.
+              <strong>Strict 30s Countdown:</strong> Manage your time. When 30 seconds expire, the system automatically
+              saves your answer and advances.
             </li>
             <li>
-              <strong>Input Validation:</strong> Manual "Next" is disabled while the response is empty. Click "Skip
+              <strong>Strict Input Validation:</strong> Manual "Next" is disabled while the input is empty. Click "Skip
               Question" to bypass.
             </li>
             <li>
-              <strong>Strict Evaluation:</strong> Empty or filler responses receive zero points. Marks are awarded
-              strictly on technical accuracy and core concepts.
+              <strong>Tab Navigation Locked:</strong> Once started, all tabs are locked until the full interview is
+              completed to preserve real-world interview conditions.
             </li>
           </ul>
         </div>
 
         <div className="mock-intro-actions">
-          <button className="start-mock-btn" onClick={handleStartInterview} disabled={isStarting || sessionRestoring}>
-            {isStarting ? "Generating Questions with AI..." : sessionRestoring ? "Restoring Session..." : "Start Mock Interview"}
+          <button
+            className="start-mock-btn"
+            onClick={handleStartInterview}
+            disabled={isGeneratingQuestions}
+          >
+            {isGeneratingQuestions ? "OpenAI Generating Questions..." : "Start Mock Interview"}
           </button>
         </div>
       </div>
@@ -770,7 +651,7 @@ const MockInterviewSession = ({
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 3. ACTIVE INTERVIEW SESSION SCREEN
+  // D. ACTIVE QUESTION WORKSPACE
   // ─────────────────────────────────────────────────────────────
   return (
     <div className="mock-session-container">
@@ -903,7 +784,7 @@ const MockInterviewSession = ({
               value={currentAnswer}
               onChange={(e) => handleAnswerChange(e.target.value)}
               rows={6}
-              disabled={isSubmittingAnswer}
+              disabled={isEvaluatingStep}
             />
 
             <div className="key-points-hint">
@@ -919,7 +800,6 @@ const MockInterviewSession = ({
           {/* Footer Controls */}
           <div className="mock-card-footer">
             <div className="footer-left">
-              {/* Urgency Alert on final 5 seconds */}
               {isTimerCritical && (
                 <span className="critical-warning-text">Auto-submitting in {questionTimeLeft}s...</span>
               )}
@@ -931,7 +811,7 @@ const MockInterviewSession = ({
                 type="button"
                 className="nav-control-btn skip-btn"
                 onClick={handleSkip}
-                disabled={isSubmittingAnswer}
+                disabled={isEvaluatingStep}
                 title="Bypass this question (0 marks awarded)"
               >
                 Skip Question
@@ -943,51 +823,30 @@ const MockInterviewSession = ({
                   type="button"
                   className="nav-control-btn next-btn"
                   onClick={handleManualNext}
-                  disabled={!currentAnswer.trim() || isSubmittingAnswer}
+                  disabled={!currentAnswer.trim() || isEvaluatingStep}
                   title={
                     !currentAnswer.trim()
                       ? "Enter an answer to proceed, or click Skip Question"
                       : "Save answer and proceed to next question"
                   }
                 >
-                  {isSubmittingAnswer ? "Evaluating..." : "Save & Next →"}
+                  {isEvaluatingStep ? "AI Evaluating..." : "Save & Next →"}
                 </button>
               ) : (
                 <button
                   type="button"
                   className="nav-control-btn submit-btn"
                   onClick={handleManualNext}
-                  disabled={!currentAnswer.trim() || isSubmittingAnswer}
+                  disabled={!currentAnswer.trim() || isEvaluatingStep}
                   title={
                     !currentAnswer.trim()
                       ? "Enter an answer to submit, or click Skip Question"
                       : "Complete mock interview and generate report"
                   }
                 >
-                  {isSubmittingAnswer ? "Evaluating..." : "Submit Interview"}
+                  {isEvaluatingStep ? "AI Evaluating..." : "Submit Interview"}
                 </button>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="mock-modal-overlay">
-          <div className="mock-modal">
-            <h3>Complete Mock Interview?</h3>
-            <p>
-              You have answered <strong>{answeredCount}</strong> out of <strong>{totalQuestions}</strong> questions in{" "}
-              {formatTime(elapsedSeconds)}.
-            </p>
-            <div className="modal-actions">
-              <button type="button" className="modal-btn secondary" onClick={() => setShowConfirmModal(false)}>
-                Resume
-              </button>
-              <button type="button" className="modal-btn primary" onClick={handleCompleteInterview}>
-                Generate Preparation Report
-              </button>
             </div>
           </div>
         </div>

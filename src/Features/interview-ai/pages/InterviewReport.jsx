@@ -19,8 +19,21 @@ const InterviewReport = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [mockReport, setMockReport] = useState(() => getSavedMockReport(id));
+  const [isInterviewInProgress, setIsInterviewInProgress] = useState(false);
+  const [lockToast, setLockToast] = useState("");
   const { loading, getInterviewReportById, report } = useInterview();
   const { user, handleLogout } = useAuth();
+
+  const handleTabClick = (tabKey) => {
+    if (isInterviewInProgress && tabKey !== "mock") {
+      setLockToast(
+        "Mock Interview session is currently in progress. Please complete or submit the active interview before switching tabs."
+      );
+      setTimeout(() => setLockToast(""), 4000);
+      return;
+    }
+    setActiveTab(tabKey);
+  };
 
   const authActions = (
     <>
@@ -208,60 +221,97 @@ const InterviewReport = () => {
           <button
             role="tab"
             aria-selected={activeTab === "overview"}
-            className={`tab-btn ${activeTab === "overview" ? "active" : ""}`}
-            onClick={() => setActiveTab("overview")}
+            className={`tab-btn ${activeTab === "overview" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("overview")}
+            title={isInterviewInProgress ? "Navigation locked while mock interview is in progress" : ""}
           >
-            Overview
+            Overview {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "technical"}
-            className={`tab-btn ${activeTab === "technical" ? "active" : ""}`}
-            onClick={() => setActiveTab("technical")}
+            className={`tab-btn ${activeTab === "technical" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("technical")}
+            title={isInterviewInProgress ? "Navigation locked while mock interview is in progress" : ""}
           >
-            Technical Questions ({technicalQuestions.length})
+            Technical Questions ({technicalQuestions.length}){" "}
+            {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "behavioral"}
-            className={`tab-btn ${activeTab === "behavioral" ? "active" : ""}`}
-            onClick={() => setActiveTab("behavioral")}
+            className={`tab-btn ${activeTab === "behavioral" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("behavioral")}
+            title={isInterviewInProgress ? "Navigation locked while mock interview is in progress" : ""}
           >
-            Behavioral Questions ({behavioralQuestions.length})
+            Behavioral Questions ({behavioralQuestions.length}){" "}
+            {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "gaps"}
-            className={`tab-btn ${activeTab === "gaps" ? "active" : ""}`}
-            onClick={() => setActiveTab("gaps")}
+            className={`tab-btn ${activeTab === "gaps" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("gaps")}
+            title={isInterviewInProgress ? "Navigation locked while mock interview is in progress" : ""}
           >
-            Skill Gaps ({skillGaps.length})
+            Skill Gaps ({skillGaps.length}){" "}
+            {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "plan"}
-            className={`tab-btn ${activeTab === "plan" ? "active" : ""}`}
-            onClick={() => setActiveTab("plan")}
+            className={`tab-btn ${activeTab === "plan" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("plan")}
+            title={isInterviewInProgress ? "Navigation locked while mock interview is in progress" : ""}
           >
-            Preparation Plan ({preparationPlan.length} Days)
+            Preparation Plan ({preparationPlan.length} Days){" "}
+            {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "mock"}
             className={`tab-btn ${activeTab === "mock" ? "active" : ""}`}
-            onClick={() => setActiveTab("mock")}
+            onClick={() => handleTabClick("mock")}
           >
             Mock Interview
           </button>
           <button
             role="tab"
             aria-selected={activeTab === "mock-report"}
-            className={`tab-btn ${activeTab === "mock-report" ? "active" : ""}`}
-            onClick={() => setActiveTab("mock-report")}
+            className={`tab-btn ${activeTab === "mock-report" ? "active" : ""} ${
+              isInterviewInProgress ? "locked" : ""
+            }`}
+            onClick={() => handleTabClick("mock-report")}
+            title={
+              isInterviewInProgress
+                ? "Locked until mock interview session is submitted"
+                : !mockReport
+                ? "Available once mock interview is completed"
+                : ""
+            }
           >
-            Preparation Report{mockReport ? ` (${mockReport.overallScore}%)` : ""}
+            Preparation Report{mockReport ? ` (${mockReport.overallScore}%)` : ""}{" "}
+            {isInterviewInProgress && <span className="tab-lock-icon">🔒</span>}
           </button>
         </div>
+
+        {/* Locked Navigation Alert Toast */}
+        {lockToast && (
+          <div className="tab-locked-toast" role="alert">
+            <span className="toast-dot" />
+            <span>{lockToast}</span>
+          </div>
+        )}
 
         {/* Tab Content */}
         <div className="tab-content">
@@ -438,9 +488,11 @@ const InterviewReport = () => {
                 selfDescription={data.selfDescription}
                 resume={data.resume}
                 existingTechQuestions={technicalQuestions}
+                onInterviewStateChange={setIsInterviewInProgress}
                 onFinishInterview={(evaluatedReport) => {
                   saveMockReport(id, evaluatedReport);
                   setMockReport(evaluatedReport);
+                  setIsInterviewInProgress(false);
                   setActiveTab("mock-report");
                 }}
               />
