@@ -33,7 +33,7 @@ const Login = () => {
   // If already authenticated, redirect straight to dashboard
   useEffect(() => {
     if (user) {
-      navigate("/dashboard", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
