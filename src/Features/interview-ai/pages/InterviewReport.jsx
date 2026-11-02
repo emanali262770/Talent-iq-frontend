@@ -11,6 +11,7 @@ import {
   getSavedMockReport,
   saveMockReport,
   clearSavedMockSession,
+  clearSavedSessionId,
 } from "../services/mockInterviewAi.service";
 
 const InterviewReport = () => {
@@ -452,6 +453,13 @@ const InterviewReport = () => {
                 report={mockReport}
                 onRetakeInterview={() => {
                   clearSavedMockSession(id);
+                  clearSavedSessionId(id);
+                  try {
+                    localStorage.removeItem(`talent_iq_mock_report_${id}`);
+                  } catch {
+                    // ignore
+                  }
+                  setMockReport(null);
                   setActiveTab("mock");
                 }}
                 onGoToInterview={() => {

@@ -676,9 +676,151 @@ export function saveMockSession(reportId, sessionData) {
 export function clearSavedMockSession(reportId) {
   try {
     localStorage.removeItem(`${STORAGE_SESSION_PREFIX}${reportId}`);
+    clearSavedSessionId(reportId);
   } catch (err) {
     console.error("Failed to clear saved mock session:", err);
   }
+}
+
+export function getSavedSessionId(reportId) {
+  try {
+    return sessionStorage.getItem(`talent_iq_mock_session_id_${reportId || "current"}`);
+  } catch {
+    return null;
+  }
+}
+
+export function saveSessionId(reportId, sessionId) {
+  try {
+    sessionStorage.setItem(`talent_iq_mock_session_id_${reportId || "current"}`, sessionId);
+  } catch {
+    // ignore
+  }
+}
+
+export function clearSavedSessionId(reportId) {
+  try {
+    sessionStorage.removeItem(`talent_iq_mock_session_id_${reportId || "current"}`);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Normalizes backend mock interview session into the report structure expected by MockInterviewReportView.
+ */
+export function adaptBackendMockInterviewToReport(session) {
+  if (!session) return null;
+  const perf = session.performance || {};
+  const questions = session.questions || [];
+
+  const answeredCount = questions.filter(
+    (q) => q.status === "answered" && q.answer && q.answer.trim().length > 0
+  ).length;
+
+  const totalQuestions = questions.length || session.questionCount || 16;
+  const elapsedSeconds = session.totalTimeSeconds || 0;
+
+  const questionEvaluations = questions.map((q, idx) => ({
+    id: q._id || `q-${idx}`,
+    number: idx + 1,
+    type: q.category === "behavioral" ? "scenario" : "technical",
+    typeLabel: q.category === "behavioral" ? "Real-World Scenario" : "Technical Concept",
+    category: q.topic || (q.category === "behavioral" ? "Scenario Solving" : "Technical Architecture"),
+    difficulty: q.difficulty || "Intermediate",
+    question: q.question,
+    intention: q.intention,
+    candidateAnswer:
+      q.answer ||
+      (q.status === "timed_out"
+        ? "Timed out (No answer submitted within 30 seconds)"
+        : q.status === "skipped"
+        ? "Skipped by candidate"
+        : "No answer recorded"),
+    wordCount: q.answer ? q.answer.trim().split(/\s+/).filter(Boolean).length : 0,
+    score: typeof q.score === "number" ? q.score : 0,
+    strengths: Array.isArray(q.strengths) ? q.strengths : [],
+    areasForImprovement: Array.isArray(q.improvements) ? q.improvements : [],
+    idealAnswer: q.benchmarkAnswer || "Benchmark criteria: " + (q.evaluationCriteria || []).join(", "),
+  }));
+
+  const categoryMap = {};
+  questions.forEach((q) => {
+    const catName = q.topic || (q.category === "behavioral" ? "Scenario & Behavioral" : "Technical Concepts");
+    if (!categoryMap[catName]) {
+      categoryMap[catName] = { sum: 0, count: 0 };
+    }
+    categoryMap[catName].sum += q.score || 0;
+    categoryMap[catName].count += 1;
+  });
+
+  const categoryBreakdown = Object.entries(categoryMap).map(([name, data]) => ({
+    name,
+    score: Math.round(data.sum / (data.count || 1)),
+  }));
+
+  const technicalStrengths =
+    Array.isArray(perf.strengths) && perf.strengths.length > 0
+      ? perf.strengths.map((str, idx) =>
+          typeof str === "string" ? { title: `Technical Strength ${idx + 1}`, description: str } : str
+        )
+      : [
+          {
+            title: "Core Technical Competence",
+            description: "Demonstrated relevant baseline knowledge tailored to role requirements.",
+          },
+        ];
+
+  const areasForImprovement =
+    Array.isArray(perf.improvementAreas) && perf.improvementAreas.length > 0
+      ? perf.improvementAreas.map((area, idx) =>
+          typeof area === "string"
+            ? {
+                skill: area,
+                severity: idx === 0 ? "high" : idx === 1 ? "medium" : "low",
+                suggestion: area,
+              }
+            : area
+        )
+      : (perf.recommendations || []).map((rec, idx) => ({
+          skill: rec,
+          severity: idx === 0 ? "high" : "medium",
+          suggestion: rec,
+        }));
+
+  const overallScore =
+    typeof perf.overallScore === "number"
+      ? perf.overallScore
+      : Math.round(questions.reduce((acc, q) => acc + (q.score || 0), 0) / (totalQuestions || 1));
+
+  return {
+    _id: session._id,
+    overallScore,
+    technicalScore: typeof perf.technicalDepth === "number" ? perf.technicalDepth : overallScore,
+    scenarioScore: typeof perf.scenarioSolving === "number" ? perf.scenarioSolving : overallScore,
+    communicationScore: typeof perf.communication === "number" ? perf.communication : Math.min(100, overallScore + 5),
+    accuracyScore: typeof perf.accuracy === "number" ? perf.accuracy : overallScore,
+    confidenceLevel: perf.confidence || (overallScore >= 75 ? "High" : overallScore >= 50 ? "Moderate" : "Low / Developing"),
+    readinessVerdict:
+      overallScore >= 80 ? "Strong Fit" : overallScore >= 60 ? "Moderate Fit" : "Needs Intensive Preparation",
+    verdictSummary: perf.summary || "Candidate completed the dynamic mock interview session.",
+    answeredCount,
+    totalQuestions,
+    elapsedSeconds,
+    technicalStrengths,
+    areasForImprovement,
+    questionEvaluations,
+    categoryBreakdown:
+      categoryBreakdown.length > 0
+        ? categoryBreakdown
+        : [
+            { name: "Technical Mastery", score: perf.technicalDepth || overallScore },
+            { name: "Scenario Problem Solving", score: perf.scenarioSolving || overallScore },
+            { name: "Accuracy & Precision", score: perf.accuracy || overallScore },
+            { name: "Communication & Trade-offs", score: perf.communication || overallScore },
+          ],
+    createdAt: session.completedAt || session.createdAt || new Date().toISOString(),
+  };
 }
 
 export function getSavedMockReport(reportId) {
